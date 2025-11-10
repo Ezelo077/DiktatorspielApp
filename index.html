@@ -2,9 +2,13 @@
 <html lang="de">
 <head>
   <meta charset="utf-8">
+  <meta name="theme-color" content="#000000">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Das Diktatorspiel</title>
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="style.css?v=7">
+  <link rel="apple-touch-icon" href="icon.jpg">
+  <link rel="icon" href="icon.jpg">
 </head>
 <body>
   <div class="app">
@@ -44,5 +48,14 @@
   <div class="toast" id="toast" role="status" aria-live="assertive"></div>
 
   <script src="script.js?v=7"></script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js')
+        .then(() => console.log('Service Worker registriert'))
+        .catch((err) => console.error('Service Worker Fehler:', err));
+    });
+  }
+</script>
 </body>
 </html>
