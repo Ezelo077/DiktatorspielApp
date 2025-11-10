@@ -80,11 +80,15 @@ btn.addEventListener('click', async () => {
   await deferredPrompt.userChoice;
   deferredPrompt = null;
 });
-</script>
-
-</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/DiktatorspielApp/service-worker.js', { scope: '/DiktatorspielApp/' })
+      .then(() => console.log('SW registriert'))
+      .catch(err => console.error('SW Fehler:', err));
+</script> 
 </body>
 </html>
+
 
 
 
