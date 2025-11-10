@@ -2,13 +2,17 @@
 <html lang="de">
 <head>
   <meta charset="utf-8">
-  <meta name="theme-color" content="#000000">
+  <meta name="theme-color"  content="#111111">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Das Diktatorspiel</title>
+  <link rel="manifest" href="/DiktatorspielApp/manifest.webmanifest">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="style.css?v=7">
   <link rel="apple-touch-icon" href="icon.jpg">
   <link rel="icon" href="icon.jpg">
+  <link rel="apple-touch-icon" href="/DiktatorspielApp/icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 </head>
 <body>
   <div class="app">
@@ -53,8 +57,13 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js')
       .then(() => console.log('Service Worker registriert'))
       .catch(err => console.error('SW Fehler:', err));
+   if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/DiktatorspielApp/service-worker.js', { scope: '/DiktatorspielApp/' })
+      .then(() => console.log('SW registriert'))
+      .catch(err => console.error('SW Fehler:', err));
   }
 </script>
 </body>
 </html>
+
 
