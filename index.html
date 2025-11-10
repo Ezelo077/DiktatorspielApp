@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Das Diktatorspiel</title>
+  <link rel="stylesheet" href="style.css?v=7">
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <div class="title">Wie böse bist du?</div>
+        <div class="subtitle">Beantworte die Fragen, wie es ein guter Diktator tun würde</div>
+      </div>
+      <div style="text-align: right;">
+        <div class="subtitle">Fortschritt</div>
+        <div class="progress" aria-hidden="true">
+          <div class="bar" id="bar"></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="board" id="board" aria-live="polite"></div>
+  </div>
+
+  <!-- Balkendiagramm unten links -->
+  <div class="scoreboard">
+    <div class="bar-wrapper">
+      <div class="bar-segment" id="bar-Bildung"><span>Bildung</span></div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-segment" id="bar-Sicherheit"><span>Sicherheit</span></div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-segment" id="bar-Zufriedenheit"><span>Zufriedenheit</span></div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-segment" id="bar-Finanzen"><span>Finanzen</span></div>
+    </div>
+  </div>
+
+  <!-- Kurzzeitige Konsequenzenanzeige -->
+  <div class="toast" id="toast" role="status" aria-live="assertive"></div>
+
+  <script src="script.js?v=7"></script>
+</body>
+</html>
