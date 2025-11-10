@@ -1,15 +1,23 @@
 {
-  "name": "Das Diktatorspiel",
-  "short_name": "Diktatorspiel",
-  "start_url": "./index.html",
+  "name": "Diktatorspiel",
+  "short_name": "Diktator",
+  "start_url": "/DiktatorspielApp/",
+  "scope": "/DiktatorspielApp/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "background_color": "#111111",
+  "theme_color": "#111111",
   "icons": [
     {
-      "src": "icon.jpg",
+      "src": "/DiktatorspielApp/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/DiktatorspielApp/icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
