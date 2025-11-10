@@ -85,9 +85,12 @@ btn.addEventListener('click', async () => {
     navigator.serviceWorker.register('/DiktatorspielApp/service-worker.js', { scope: '/DiktatorspielApp/' })
       .then(() => console.log('SW registriert'))
       .catch(err => console.error('SW Fehler:', err));
-</script> 
+  }
+</script>
+
 </body>
 </html>
+
 
 
 
