@@ -2,17 +2,23 @@
 <html lang="de">
 <head>
   <meta charset="utf-8">
-  <meta name="theme-color"  content="#111111">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111111">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
   <title>Das Diktatorspiel</title>
-  <link rel="manifest" href="/DiktatorspielApp/manifest.webmanifest">
-  <link rel="manifest" href="manifest.webmanifest">
+
+  <!-- Manifest (relativ, funktioniert lokal + auf GitHub Pages) -->
+  <link rel="manifest" href="./manifest.webmanifest">
+
+  <!-- Icons -->
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <!-- Styles -->
   <link rel="stylesheet" href="style.css?v=7">
-  <link rel="apple-touch-icon" href="icon.jpg">
-  <link rel="icon" href="icon.jpg">
-  <link rel="apple-touch-icon" href="/DiktatorspielApp/icons/icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
 </head>
 <body>
   <div class="app">
@@ -21,11 +27,9 @@
         <div class="title">Wie böse bist du?</div>
         <div class="subtitle">Beantworte die Fragen, wie es ein guter Diktator tun würde</div>
       </div>
-      <div style="text-align: right;">
+      <div style="text-align:right;">
         <div class="subtitle">Fortschritt</div>
-        <div class="progress" aria-hidden="true">
-          <div class="bar" id="bar"></div>
-        </div>
+        <div class="progress" aria-hidden="true"><div class="bar" id="bar"></div></div>
       </div>
     </header>
 
@@ -34,64 +38,46 @@
 
   <!-- Balkendiagramm unten links -->
   <div class="scoreboard">
-    <div class="bar-wrapper">
-      <div class="bar-segment" id="bar-Bildung"><span>Bildung</span></div>
-    </div>
-    <div class="bar-wrapper">
-      <div class="bar-segment" id="bar-Sicherheit"><span>Sicherheit</span></div>
-    </div>
-    <div class="bar-wrapper">
-      <div class="bar-segment" id="bar-Zufriedenheit"><span>Zufriedenheit</span></div>
-    </div>
-    <div class="bar-wrapper">
-      <div class="bar-segment" id="bar-Finanzen"><span>Finanzen</span></div>
-    </div>
+    <div class="bar-wrapper"><div class="bar-segment" id="bar-Bildung"><span>Bildung</span></div></div>
+    <div class="bar-wrapper"><div class="bar-segment" id="bar-Sicherheit"><span>Sicherheit</span></div></div>
+    <div class="bar-wrapper"><div class="bar-segment" id="bar-Zufriedenheit"><span>Zufriedenheit</span></div></div>
+    <div class="bar-wrapper"><div class="bar-segment" id="bar-Finanzen"><span>Finanzen</span></div></div>
   </div>
 
   <!-- Kurzzeitige Konsequenzenanzeige -->
   <div class="toast" id="toast" role="status" aria-live="assertive"></div>
 
+  <!-- Installationsbutton (wird dynamisch eingeblendet) -->
+  <button id="btnInstall" hidden>App installieren</button>
+
+  <!-- Scripts -->
   <script src="script.js?v=7"></script>
+
   <script>
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js')
-      .then(() => console.log('Service Worker registriert'))
-      .catch(err => console.error('SW Fehler:', err));
-   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/DiktatorspielApp/service-worker.js', { scope: '/DiktatorspielApp/' })
-      .then(() => console.log('SW registriert'))
-      .catch(err => console.error('SW Fehler:', err));
-  }
-  <button id="btnInstall" hidden>Installieren</button>
-<script>
-let deferredPrompt;
-const btn = document.getElementById('btnInstall');
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  btn.hidden = false;
-});
-
-btn.addEventListener('click', async () => {
-  btn.hidden = true;
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-});
-<script>
+  // Service Worker registrieren (relativ für GitHub Pages)
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/DiktatorspielApp/service-worker.js', { scope: '/DiktatorspielApp/' })
-      .then(() => console.log('SW registriert'))
-      .catch(err => console.error('SW Fehler:', err));
+    navigator.serviceWorker.register('./service-worker.js', { scope: './' })
+      .then(() => console.log('Service Worker registriert'))
+      .catch(err => console.error('Service Worker Fehler:', err));
   }
-</script>
 
+  // Installations-Prompt behandeln
+  let deferredPrompt;
+  const btn = document.getElementById('btnInstall');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    btn.hidden = false;
+  });
+
+  btn.addEventListener('click', async () => {
+    btn.hidden = true;
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+  });
+  </script>
 </body>
 </html>
-
-
-
-
-
