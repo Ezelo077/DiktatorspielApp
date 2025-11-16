@@ -7,6 +7,7 @@
 /* ===== Hintergrund ===== */
 html, body { height: 100%; }
 body{
+   padding-top: 120px;
   margin: 0;
   background:
     linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.35)),
@@ -221,6 +222,7 @@ header {
   background: rgba(0,0,0,0.3);
   border-radius: 4px;
 }
+
 
 
 
