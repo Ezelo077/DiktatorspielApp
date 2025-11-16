@@ -356,11 +356,17 @@ function renderBoard() {
   const board = $('#board');
   board.innerHTML = '';
 
+  // Falls Deck leer oder fehlerhaft
   if (!state.playDeck || state.playDeck.length === 0) {
-    board.innerHTML = `<div class="card"><div class="end"><h2>Kein Fragen-Deck geladen</h2></div></div>`;
+    board.innerHTML = `
+      <div class="card">
+        <div class="end"><h2>Kein Fragen-Deck geladen</h2></div>
+      </div>
+    `;
     return;
   }
 
+  // --- Spielende ---
   if (state.index >= state.playDeck.length) {
     const wrap = create('div', 'card');
     wrap.style.display = 'grid';
@@ -368,7 +374,8 @@ function renderBoard() {
     const end = create('div', 'end');
 
     const scoreList = Object.entries(state.scores)
-      .map(([k, v]) => `<div><strong>${k}:</strong> ${v}</div>`).join('');
+      .map(([k, v]) => `<div><strong>${k}:</strong> ${v}</div>`)
+      .join('');
 
     const historyText = state.history.map(h => h.consequence).join(' ');
 
@@ -381,41 +388,48 @@ function renderBoard() {
       <p style="text-align:justify; max-width:560px; margin:0 auto 16px;">${historyText}</p>
       <button class="btn" onclick="restart()">Nochmal spielen</button>
     `;
+
     wrap.appendChild(end);
     board.appendChild(wrap);
     $('#bar').style.width = '100%';
     return;
   }
 
+  // --- Normale Karte (NUR Frage + Buttons) ---
   const cardData = state.playDeck[state.index];
   const card = create('article', 'card above');
-  const badgeL = create('div', 'badge left');
-  badgeL.textContent = cardData.left.label;
-  const badgeR = create('div', 'badge right');
-  badgeR.textContent = cardData.right.label;
-  card.append(badgeL, badgeR);
 
-  const meta = create('div', 'meta');
-  meta.textContent = cardData.meta || '';
+  // --- Frage ---
   const prompt = create('div', 'prompt');
   prompt.textContent = cardData.prompt;
+
   const spacer = create('div');
+
+  // --- Buttons ---
   const choices = create('div', 'choices');
 
   const btnLeft = create('button', 'btn btn-left');
   btnLeft.textContent = `← ${cardData.left.label}`;
+
   const btnRight = create('button', 'btn btn-right');
   btnRight.textContent = `${cardData.right.label} →`;
+
   btnLeft.addEventListener('click', () => decide('left', cardData));
   btnRight.addEventListener('click', () => decide('right', cardData));
+
   choices.append(btnLeft, btnRight);
 
-  card.append(meta, prompt, spacer, choices);
+  // --- Nur das: Frage, Spacer, Buttons ---
+  card.append(prompt, spacer, choices);
   board.appendChild(card);
+
   updateProgress();
   updateBars();
 }
 
+
+
 // --- Start ---
 renderBoard();
 updateBars();
+
