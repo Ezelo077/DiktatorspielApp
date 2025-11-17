@@ -213,6 +213,36 @@ const DECK = [
       effects: { Zufriedenheit: -1, Bildung: +2 }
     }
   },
+    {
+    id: 16,
+    prompt: "Einführung des 'Schwobentalers' – eigene Landeswährung.",
+    meta: "Finanzen",
+    left:  {
+      label: "Einführen",
+      consequence: "Wirtschaft steht auf dem Kopf. Schwobentaler geht nach hinten los. Menschen beschäftigen sichh mehr mit Finanzen",
+      effects: { Finanzen: -1, Zufriedenheit: -1, Bildung: +1 }
+    },
+    right: {
+      label: "Nicht Einführen",
+      consequence: "Euro bleibt stabil, jedoch beschäftigt sich niemand mit der Wirtschaft",
+      effects: { Finanzen: -1 }
+    }
+  },
+    {
+    id: 17,
+    prompt: "Ausbau von Windräden auf Schwarzwald-Gipfeln.",
+    meta: "Finanzen",
+    left:  {
+      label: "Bauen",
+      consequence: "Strompreise sind deutlich günstiger, aber die Anwohner sind genervt von den Baustellen",
+      effects: { Finanzen: +2, Zufriedenheit: -1,}
+    },
+    right: {
+      label: "Nicht Bauen",
+      consequence: "Strompreise explodierenm jedoch bleibt Natur erhalten",
+      effects: { Finanzen: -1, Zufriedenheit: +1 }
+    }
+  },
   {
     id: 15,
     prompt: "Freibäder sollen verboten werden, um Wasser zu sparen und Unfälle zu vermeiden.",
@@ -432,4 +462,5 @@ function renderBoard() {
 // --- Start ---
 renderBoard();
 updateBars();
+
 
