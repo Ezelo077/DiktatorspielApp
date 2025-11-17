@@ -243,6 +243,52 @@ const DECK = [
       effects: { Finanzen: -1, Zufriedenheit: +1 }
     }
   },
+    {
+    id: 18,
+    prompt: "Verstaatlichung aller Banken.",
+    meta: "Finanzen",
+    left: {
+      label: "Umsetzen",
+      consequence: "Staat kontrolliert das Geld, Bürokratie explodiert.",
+      effects: { Finanzen: -1, Zufriedenheit: -1 }
+    },
+    right: {
+      label: "Ablehnen",
+      consequence: "Reiche werden reicher, Bürger fühlen sich ohnmächtig.",
+      effects: { Finanzen: +1, Zufriedenheit: -1 }
+    }
+  },
+  {
+    id: 19,
+    prompt: "Abschaffung des Bargelds.",
+    meta: "Sicherheit",
+    left: {
+      label: "Umsetzen",
+      consequence: "Steuerhinterziehung sinkt, ältere Menschen überfordert.",
+      effects: { Sicherheit: +1, Zufriedenheit: -1 } 
+    },
+    right: {
+      label: "Ablehnen",
+      consequence: "Schattenwirtschaft boomt.",
+      effects: { Sicherheit: -1, Zufriedenheit: +1 }
+    }
+  },
+  {
+    id: 20,
+    prompt: "Verbot von Alkohol.",
+    meta: "Gesundheit",
+    left: {
+      label: "Umsetzen",
+      consequence: "Produktivität steigt, Schwarzmarkt wächst.",
+      effects: { Sicherheit: -1, Bildung: +1 }
+    },
+    right: {
+      label: "Ablehnen",
+      consequence: "Bürger feiern, Krankenhäuser voll.",
+      effects: { Zufriedenheit: +1, Sicherheit: -1 }
+    }
+  },
+
   {
     id: 15,
     prompt: "Freibäder sollen verboten werden, um Wasser zu sparen und Unfälle zu vermeiden.",
@@ -462,5 +508,6 @@ function renderBoard() {
 // --- Start ---
 renderBoard();
 updateBars();
+
 
 
