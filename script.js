@@ -334,7 +334,37 @@ const DECK = [
       effects: { Sicherheit: -1, Zufriedenheit: +1 }
     }
   },
+   {
+    id: 24,
+    prompt: "Verbot von Religion.",
+    meta: "Sicherheit",
+    left: {
+      label: "Umsetzen",
+      consequence: "Weniger Konflikte, Menschen fühlen Leere.",
+      effects: { Sicherheit: +1, Zufriedenheit: -2 }
+    },
+    right: {
+      label: "Ablehnen",
+      consequence: "Vielfalt blüht, Glaubensstreit eskaliert.",
+      effects: { Sicherheit: -1, Zufriedenheit: +1 }
+    }
+  },
 
+{
+    id: 25,
+    prompt: "Erhöhung der Staatsausgaben für Propaganda.",
+    meta: "Zufriedenheit",
+    left: {
+      label: "Umsetzen",
+      consequence: "Alle Medien loben dich, niemand glaubt ihnen.",
+      effects: { Zufriedenheit: -1, Bildung: -1 }
+    },
+    right: {
+      label: "Ablehnen",
+      consequence: "Presse bleibt kritisch, Beliebtheit sinkt.",
+      effects: { Zufriedenheit: -1, Bildung: +1 }
+    }
+  }
 
   {
     id: 15,
@@ -555,6 +585,7 @@ function renderBoard() {
 // --- Start ---
 renderBoard();
 updateBars();
+
 
 
 
