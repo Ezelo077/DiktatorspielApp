@@ -288,6 +288,53 @@ const DECK = [
       effects: { Zufriedenheit: +1, Sicherheit: -1 }
     }
   },
+  {
+    id: 21,
+    prompt: "Einführung einer Ehepflicht.",
+    meta: "Zufriedenheit",
+    left: {
+      label: "Umsetzen",
+      consequence: "Hochzeiten überall, Scheidungen explodieren.",
+      effects: { Zufriedenheit: -1 }
+    },
+    right: {
+      label: "Ablehnen",
+      consequence: "Freiheit bleibt, Geburtenrate sinkt.",
+      effects: { Zufriedenheit: +1 }
+    }
+  },
+  {
+    id: 22,
+    prompt: "Jeder Bürger muss einen Baum pflanzen.",
+    meta: "Sicherheit",
+    left: {
+      label: "Umsetzen",
+      consequence: "Städte werden grün, aber Organisation kostet Milliarden.",
+      effects: { Sicherheit: +1, Finanzen: -2 }
+    },
+    right: {
+      label: "Ablehnen",
+      consequence: "Umwelt bleibt trist.",
+      effects: { Zufriedenheit: -1, Sicherheit: -1 }
+    }
+  },
+
+ {
+    id: 23,
+    prompt: "Einführung von Uniformen für alle Bürger.",
+    meta: "Sicherheit",
+    left: {
+      label: "Umsetzen",
+      consequence: "Ordnung steigt, Individualität verschwindet.",
+      effects: { Sicherheit: +1, Zufriedenheit: -1 }
+    },
+    right: {
+      label: "Ablehnen",
+      consequence: "Vielfalt bleibt, aber Neid wächst.",
+      effects: { Sicherheit: -1, Zufriedenheit: +1 }
+    }
+  },
+
 
   {
     id: 15,
@@ -508,6 +555,7 @@ function renderBoard() {
 // --- Start ---
 renderBoard();
 updateBars();
+
 
 
 
