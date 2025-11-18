@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1.0.8';
+const CACHE_VERSION = 'v1.0.9';
 const CACHE_NAME = `diktatorspiel-${CACHE_VERSION}`;
 
 const ASSETS = [
@@ -41,6 +41,7 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
 
 
 
