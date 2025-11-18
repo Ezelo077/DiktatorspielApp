@@ -383,6 +383,65 @@ const DECK = [
   }
 ];
 
+
+const RESCUE_CARDS = {
+  Zufriedenheit: [
+    {
+      prompt: "Du kannst die Bevölkerung durch eine große Gratis-Show beruhigen.",
+      left:  { label: "Show finanzieren (-5 Finanzen)", effects: { Zufriedenheit: +4, Finanzen: -5 }},
+      right: { label: "Show absagen", effects: {} }
+    },
+    {
+      prompt: "Du kannst eine landesweite PR-Kampagne starten.",
+      left:  { label: "Kampagne starten (-3 Bildung)", effects: { Zufriedenheit: +3, Bildung: -3 }},
+      right: { label: "Nicht starten", effects: {} }
+    }
+  ],
+
+  Sicherheit: [
+    {
+      prompt: "Geheime Eliteeinheit einsetzen?",
+      left:  { label: "Einsetzen (-4 Finanzen)", effects: { Sicherheit: +4, Finanzen: -4 }},
+      right: { label: "Nein", effects: {} }
+    },
+    {
+      prompt: "Strengere Gesetze erlassen?",
+      left:  { label: "Erlassen (-3 Zufriedenheit)", effects: { Sicherheit: +3, Zufriedenheit: -3 }},
+      right: { label: "Nein", effects: {} }
+    }
+  ],
+
+  Bildung: [
+    {
+      prompt: "Elite-Unis fördern?",
+      left:  { label: "Fördern (-4 Finanzen)", effects: { Bildung: +4, Finanzen: -4 }},
+      right: { label: "Nein", effects: {} }
+    },
+    {
+      prompt: "Unis von Experten leiten?",
+      left:  { label: "Einsetzen (-3 Zufriedenheit)", effects: { Bildung: +3, Zufriedenheit: -3 }},
+      right: { label: "Nein", effects: {} }
+    }
+  ],
+
+  Finanzen: [
+    {
+      prompt: "Schwarze Kassen öffnen?",
+      left:  { label: "Öffnen (-4 Sicherheit)", effects: { Finanzen: +4, Sicherheit: -4 }},
+      right: { label: "Nein", effects: {} }
+    },
+    {
+      prompt: "Einmalige Steuererhöhung?",
+      left:  { label: "Einführen (-3 Zufriedenheit)", effects: { Finanzen: +3, Zufriedenheit: -3 }},
+      right: { label: "Nein", effects: {} }
+    }
+  ]
+};
+
+
+
+
+
 // --- Zufällige Karten ziehen ---
 function sampleDeck(base, n) {
   const arr = base.slice();
@@ -399,8 +458,12 @@ const state = {
   index: 0,
   history: [],
   scores: { Bildung: 5, Sicherheit: 5, Zufriedenheit: 5, Finanzen: 5 },
-  playDeck: sampleDeck(DECK, 5)
+  playDeck: sampleDeck(DECK, 7),
+  rescueUsed: false,
+  pendingRescue: false   // <<< neu
 };
+
+
 
 // --- Hilfsfunktionen ---
 const $ = (sel, el=document) => el.querySelector(sel);
@@ -422,8 +485,40 @@ function updateBars() {
   }
 }
 
+// --------------------------------------------------------------
+//  PUNKTE-ANIMATION (NEU)
+// --------------------------------------------------------------
+function showPointsAnimation(effects) {
+  const board = document.getElementById("board");
+
+  const wrap = document.createElement("div");
+  wrap.className = "points-float";
+
+  wrap.innerHTML = Object.entries(effects)
+    .map(([cat, val]) => {
+      const cls = val > 0 ? "points-positive" : "points-negative";
+      const sign = val > 0 ? "+" : "";
+      return `<div class="${cls}">${sign}${val} ${cat}</div>`;
+    })
+    .join("");
+
+  board.appendChild(wrap);
+
+  setTimeout(() => wrap.remove(), 5000);
+}
+// --------------------------------------------------------------
+
+
 function checkGameOver() {
   for (const [cat, val] of Object.entries(state.scores)) {
+    
+    // --- Rettung vorher abfangen ---
+    if (!state.rescueUsed && (val <= 0 || val >= 10)) {
+      launchRescue(cat);
+      return true;
+    }
+
+    // --- echtes Game Over ---
     if (val <= 0 || val >= 10) {
       showGameOver(cat, val <= 0 ? "zu niedrig" : "zu hoch");
       return true;
@@ -431,6 +526,61 @@ function checkGameOver() {
   }
   return false;
 }
+
+
+function launchRescue(cat) {
+  state.rescueUsed = true;
+  state.pendingRescue = true;
+
+  const options = RESCUE_CARDS[cat];
+  const rescueCard = options[Math.floor(Math.random() * options.length)];
+
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+
+  const card = create("article", "card rescue above"); // <<< direkt rescue setzen
+
+  const prompt = create("div", "prompt");
+  prompt.textContent = "⚠️ Du stehst kurz vor dem Verlust!\n" + rescueCard.prompt;
+
+  const choices = create("div", "choices");
+
+  const btnLeft = create("button", "btn btn-left");
+  btnLeft.textContent = rescueCard.left.label;
+  
+  const btnRight = create("button", "btn btn-right");
+  btnRight.textContent = rescueCard.right.label;
+
+  btnLeft.addEventListener("click", () => {
+    applyRescueEffects(rescueCard.left.effects);
+    state.pendingRescue = false;
+    renderBoard();
+  });
+
+  btnRight.addEventListener("click", () => {
+    state.pendingRescue = false; 
+    renderBoard();
+  });
+
+  choices.append(btnLeft, btnRight);
+
+  card.append(prompt, document.createElement("div"), choices);
+  board.appendChild(card);
+}
+
+
+function applyRescueEffects(effects) {
+  for (const [cat, val] of Object.entries(effects)) {
+    state.scores[cat] += val;
+    state.scores[cat] = Math.max(0, Math.min(10, state.scores[cat]));
+  }
+
+  updateBars();
+  state.pendingRescue = false;
+}
+
+
+
 
 const GAME_OVER_MESSAGES = {
   Bildung: {
@@ -450,6 +600,8 @@ const GAME_OVER_MESSAGES = {
     high: "Das ganze Geld hat dich korrupt gemacht. Deine Bevölkerung lehnt sich gegen dich auf."
   }
 };
+
+
 
 function showGameOver(cat, reason) {
   const board = $('#board');
@@ -472,6 +624,10 @@ function showGameOver(cat, reason) {
   board.appendChild(wrap);
 }
 
+
+
+
+
 function showToast(msg) {
   const t = $('#toast');
   t.textContent = msg;
@@ -480,36 +636,85 @@ function showToast(msg) {
   t._hide = setTimeout(() => t.classList.remove('show'), 1700);
 }
 
+
+
+
+// --------------------------------------------------------------
+//  ENTSCHEIDUNG MIT PUNKTE-ANIMATION (ANGEPAST)
+// --------------------------------------------------------------
 function decide(side, data) {
   const pick = data[side];
   const eff = pick.effects || {};
+
+  // Punktanimation GLOBAL anzeigen
+  showPointsAnimation(eff);
+
+  // Werte ändern
   for (const [cat, val] of Object.entries(eff)) {
     if (state.scores[cat] === undefined) state.scores[cat] = 5;
     state.scores[cat] += val;
-    if (state.scores[cat] > 10) state.scores[cat] = 10;
-    if (state.scores[cat] < 0) state.scores[cat] = 0;
+    state.scores[cat] = Math.max(0, Math.min(10, state.scores[cat]));
   }
+
   state.history.push({ id: data.id, choice: side, consequence: pick.consequence, effects: eff });
   showToast(pick.consequence);
+
   state.index++;
   updateBars();
+
   if (!checkGameOver()) setTimeout(renderBoard, 180);
 }
+
+
+
+
+
+
+function showPointsAnimation(effects) {
+  const overlay = document.getElementById('points-overlay');
+  if (!overlay) return;
+
+  const wrap = document.createElement('div');
+  wrap.className = "points-float";
+
+  let html = "";
+  for (const [cat, val] of Object.entries(effects)) {
+    const cls = val >= 0 ? "points-positive" : "points-negative";
+    // Kategorie + Wert anzeigen
+    html += `<div class="${cls}">${cat}: ${val >= 0 ? "+" : ""}${val}</div>`;
+  }
+
+  wrap.innerHTML = html;
+  overlay.appendChild(wrap);
+
+  // Nach der Animation wieder entfernen
+  setTimeout(() => wrap.remove(), 2300);
+}
+
+
+
+
 
 function restart() {
   state.index = 0;
   state.history = [];
   state.scores = { Bildung: 5, Sicherheit: 5, Zufriedenheit: 5, Finanzen: 5 };
   state.playDeck = sampleDeck(DECK, 5);
+  state.rescueUsed = false;
+  state.pendingRescue = false;
+
   renderBoard();
   updateBars();
 }
+
+
+
+
 
 function renderBoard() {
   const board = $('#board');
   board.innerHTML = '';
 
-  // Falls Deck leer oder fehlerhaft
   if (!state.playDeck || state.playDeck.length === 0) {
     board.innerHTML = `
       <div class="card">
@@ -519,7 +724,6 @@ function renderBoard() {
     return;
   }
 
-  // --- Spielende ---
   if (state.index >= state.playDeck.length) {
     const wrap = create('div', 'card');
     wrap.style.display = 'grid';
@@ -548,17 +752,20 @@ function renderBoard() {
     return;
   }
 
-  // --- Normale Karte (NUR Frage + Buttons) ---
+  // Karte
   const cardData = state.playDeck[state.index];
-  const card = create('article', 'card above');
+  
+  let cardClass = 'card above';
+if (state.pendingRescue) cardClass = 'card rescue above';
+const card = create('article', cardClass);
 
-  // --- Frage ---
+
+
   const prompt = create('div', 'prompt');
   prompt.textContent = cardData.prompt;
 
   const spacer = create('div');
 
-  // --- Buttons ---
   const choices = create('div', 'choices');
 
   const btnLeft = create('button', 'btn btn-left');
@@ -572,7 +779,6 @@ function renderBoard() {
 
   choices.append(btnLeft, btnRight);
 
-  // --- Nur das: Frage, Spacer, Buttons ---
   card.append(prompt, spacer, choices);
   board.appendChild(card);
 
@@ -580,14 +786,6 @@ function renderBoard() {
   updateBars();
 }
 
-
-
 // --- Start ---
 renderBoard();
 updateBars();
-
-
-
-
-
-
