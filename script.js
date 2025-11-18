@@ -364,7 +364,7 @@ const DECK = [
       consequence: "Presse bleibt kritisch, Beliebtheit sinkt.",
       effects: { Zufriedenheit: -1, Bildung: +1 }
     }
-  }
+  },
 
   {
     id: 15,
@@ -585,6 +585,7 @@ function renderBoard() {
 // --- Start ---
 renderBoard();
 updateBars();
+
 
 
 
