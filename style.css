@@ -218,3 +218,68 @@ header {
   background: rgba(0,0,0,0.3);
   border-radius: 4px;
 }
+/* Globales Punkte-Overlay */
+#points-overlay {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -20%);
+  pointer-events: none;
+  z-index: 99999; /* über allem */
+}
+
+/* einzelner Punkte-Effekt */
+.points-float {
+  position: absolute;
+  left: 0; /* irrelevant, weil transform genutzt wird */
+  top: 0;
+  transform: translate(-50%, 0);
+}
+
+.points-float div {
+  font-size: 18px;
+  font-weight: 400;
+  opacity: 0;
+  animation: pointsFloat 1.2s ease-out forwards;
+   white-space: nowrap;  
+}
+
+/* Farben */
+.points-positive { color: #32cd32; }
+.points-negative { color: #ff4040; }
+
+@keyframes pointsFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  90% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-40px) scale(1);
+  }
+}
+
+.card.rescue {
+  background: #b30000;          /* kräftiges Rot */
+  color: #fff;                  /* weiße Schrift */
+  border: 2px solid #660000;    /* dunklere Umrandung */
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}
+
+.card.rescue .btn {
+  background: #fff;
+  color: #000;
+  font-weight: 800;
+}
+
+.card.rescue .btn:hover {
+  background: #f2f2f2;
+}
