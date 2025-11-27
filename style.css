@@ -128,12 +128,11 @@ header {
 }
 
 .card{
-  position: absolute;
-  inset: 0;
+  position: relative;     /* WICHTIG */
   margin: 0 auto;
 
   width: min(600px, 92%);
-  height: 100%;
+  min-height: 420px;      /* statt height:100% */
 
   background: var(--paper);
   color: var(--ink);
@@ -283,3 +282,68 @@ header {
 .card.rescue .btn:hover {
   background: #f2f2f2;
 }
+
+
+/* ===== SCOREBOARD OBEN ===== */
+.scoreboard {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 260px;
+  display: grid;
+  gap: 10px;
+  background: rgba(0,0,0,0.45);
+  padding: 12px 14px;
+  border-radius: 14px;
+  backdrop-filter: blur(6px);
+  z-index: 9999;
+}
+
+.bar-wrapper {
+  background: rgba(0,0,0,.35);
+  border-radius: 10px;
+  overflow: hidden;
+  height: 28px;
+}
+
+.bar-segment {
+  height: 100%;
+  width: 50%; /* wird von JS überschrieben */
+  background: linear-gradient(90deg, #ff5864, #ff9a56);
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 8px;
+
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+
+  transition: width .3s ease;
+}
+
+/* Allgemeines Icon-Layout */
+.bar-segment .icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bar-segment .icon svg {
+  width: 32px;        /* nicht kleiner */
+  height: 32px;
+  color: #fff;
+  flex-shrink: 0;
+  display: block;
+  filter: drop-shadow(0 0 2px rgba(0,0,0,.9));
+}
+
+
+
+/* Falls du später pro Kategorie tweaken willst: */
+.icon.education svg   { /* optional: andere Größe/Farbe */ }
+.icon.security svg    { /* optional */ }
+.icon.happiness svg   { /* optional */ }
+.icon.finances svg    { /* optional */ }
