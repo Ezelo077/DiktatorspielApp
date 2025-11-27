@@ -657,7 +657,8 @@ function decide(side, data) {
   }
 
   state.history.push({ id: data.id, choice: side, consequence: pick.consequence, effects: eff });
-  showToast(pick.consequence);
+// showToast(pick.consequence);
+
 
   state.index++;
   updateBars();
