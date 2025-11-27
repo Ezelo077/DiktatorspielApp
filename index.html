@@ -4,38 +4,210 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Das Diktatorspiel</title>
-  <link rel="stylesheet" href="style.css?v=8">
+  <link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
-<div id="points-overlay"></div>
 
+  <!-- Punkte-Overlay für +X / -X -->
+  <div id="points-overlay"></div>
 
-  <!-- SCOREBOARD GANZ OBEN -->
   <div class="scoreboard">
-    <div class="bar-wrapper">
-      <div class="bar-segment" id="bar-Bildung">
-        <img src="icons/buch.jpg" alt="Bildung">
-      </div>
-    </div>
 
-    <div class="bar-wrapper">
-      <div class="bar-segment" id="bar-Sicherheit">
-        <img src="icons/schild.jpg" alt="Sicherheit">
-      </div>
-    </div>
+  
+  <!-- ZUFRIEDENHEIT -->
+<div class="bar-wrapper">
+  <div class="bar-segment" id="bar-Zufriedenheit">
+    <span class="icon happiness">
+      <svg
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <!-- Gesicht -->
+        <circle
+          cx="12"
+          cy="12"
+          r="9"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        />
+        <!-- linkes Auge -->
+        <circle
+          cx="9"
+          cy="10"
+          r="1"
+          fill="currentColor"
+        />
+        <!-- rechtes Auge -->
+        <circle
+          cx="15"
+          cy="10"
+          r="1"
+          fill="currentColor"
+        />
+        <!-- Lächeln -->
+        <path
+          d="M8 15c1 1.5 2.5 2.3 4 2.3s3-0.8 4-2.3"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </span>
+  </div>
+</div>
 
-    <div class="bar-wrapper">
-      <div class="bar-segment" id="bar-Zufriedenheit">
-        <img src="icons/daumen.jpg" alt="Zufriedenheit">
-      </div>
-    </div>
 
-    <div class="bar-wrapper">
-      <div class="bar-segment" id="bar-Finanzen">
-        <img src="icons/geldschein.jpg" alt="Finanzen">
-      </div>
+  <!-- BILDUNG -->
+<div class="bar-wrapper">
+  <div class="bar-segment" id="bar-Bildung">
+    <span class="icon education">
+      <svg
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <!-- linke Buchseite -->
+        <path
+          d="M4 5.5c0-.8.7-1.5 1.5-1.5H11v15H5.5C4.7 19 4 18.3 4 17.5V5.5z"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linejoin="round"
+        />
+
+        <!-- rechte Buchseite -->
+        <path
+          d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5-.7 1.5-1.5V5.5z"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linejoin="round"
+        />
+
+        <!-- Buchfalz -->
+        <line
+          x1="12"
+          y1="4"
+          x2="12"
+          y2="19"
+          stroke="currentColor"
+          stroke-width="2"
+        />
+      </svg>
+    </span>
+  </div>
+</div>
+
+
+  <!-- SICHERHEIT -->
+  <div class="bar-wrapper">
+    <div class="bar-segment" id="bar-Sicherheit">
+      <span class="icon security">
+        <!-- SCHILD SVG -->
+        <span class="icon security">
+  <svg
+    viewBox="0 0 323.31 397.58"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <!-- FÜLLUNG -->
+    <path
+      fill="currentColor"
+      d="M165.13,3.93c-.01,2.11,0,4.22,0,6.33,0,4.1,0,8.2,0,12.3,0,5.83,0,11.67-.01,17.5v21.91c-.02,8.51
+      .02,17.02-.03,25.54l-.02,28.37c0,10.14-.01,20.28-.02,30.42,0,10.56-.01,21.12-.02,31.69s-.01,21.44-.02,32.16-.01,21.23-.02,31.85
+      .01,20.5-.02,30.75c0,9.62-.01,19.24-.02,28.87,0,8.73-.01,17.46-.02,26.19,0,7.58,0,15.16-.01,22.73,0,6.16,0,12.32
+      .01,18.49v13.45c0,2.54-5.01,11.09-5.01,13.63,0,.07,5.02.46,5,.47,83.48-10.72,149.98-111.25,157.37-231.18l.04-73.46
+      c-.99.13,1.98.24-2.98.34-6.08.64-12.28.97-18.58.97-14.99-.01-30-1.91-44.57-5.86-13.36-3.62-26.37-8.95-38.49-16.21
+      -10.96-6.57-21.22-14.73-29.96-24.63-7.94-8.99-14.6-19.46-18.99-31.12-.74-1.96-1.41-3.95-2.01-5.97
+      -.55-1.85-1.35-3.62-1.62-5.55Z"
+    />
+
+    <!-- KONTUR (dünn!) -->
+    <path
+      d="M162.69,5.11l.21,387.22c0,.1-.08.17-.18.16
+      C79.34,381.59,12.99,286.05,5.67,166.21
+      c-.44-7.27-.67-14.62.67-22.05s.23-14.79.67-22.05
+      c.6-9.85,1.6-19.53,2.98-29.01
+      c6.08.64,12.28.98,18.58.98
+      c67.5,0,123.66-38.35,135.47-88.97Z"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="3"
+      stroke-linejoin="round"
+    />
+  </svg>
+</span>
+
+      </span>
     </div>
   </div>
+
+    <!-- FINANZEN -->
+  <div class="bar-wrapper">
+    <div class="bar-segment" id="bar-Finanzen">
+      <span class="icon finances">
+        <svg
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <!-- Kreis / Münze -->
+          <circle
+            cx="12"
+            cy="12"
+            r="9"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          />
+          <!-- Euro-Symbol -->
+          <path
+            d="M15 8.5
+               C14.5 8.1 13.9 8 13.3 8
+               C11.5 8 10.2 9.1 9.7 11
+               H8
+               M8 13
+               H9.7
+               C10.2 14.9 11.5 16 13.3 16
+               C13.9 16 14.5 15.9 15 15.5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <!-- Querstrich oben -->
+          <line
+            x1="8.2"
+            y1="10.2"
+            x2="13.5"
+            y2="10.2"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+          <!-- Querstrich unten -->
+          <line
+            x1="8.2"
+            y1="13.8"
+            x2="13.5"
+            y2="13.8"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        </svg>
+      </span>
+    </div>
+  </div>
+
+
+</div>
+
 
   <!-- HAUPTAPP -->
   <div class="app">
@@ -53,17 +225,13 @@
       </div>
     </header>
 
+    <!-- WICHTIG: board ist leer, JS füllt die Karten -->
     <div class="board" id="board" aria-live="polite"></div>
   </div>
 
   <!-- Kurzzeitige Konsequenzenanzeige -->
   <div class="toast" id="toast" role="status" aria-live="assertive"></div>
 
-  <div id="points-overlay"></div>
-
-  <script src="script.js?v=11"></script>
+  <script src="script.js?v=12"></script>
 </body>
 </html>
-
-
-
