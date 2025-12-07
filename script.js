@@ -768,16 +768,16 @@ function playEndSound(cat, reason) {
   let file = "";
 
   if (cat === "Finanzen") {
-    file = reason === "zu hoch" ? "FinanzenZuViel.wav" : "FinanzenZuWenig.wav";
+    file = reason === "zu hoch" ? "FinanzenZuViel.WAV" : "FinanzenZuWenig.WAV";
   }
   if (cat === "Bildung") {
-    file = reason === "zu hoch" ? "BildungZuViel.wav" : "BildungZuWenig.wav";
+    file = reason === "zu hoch" ? "BildungZuViel.WAV" : "BildungZuWenig.WAV";
   }
   if (cat === "Sicherheit") {
-    file = reason === "zu hoch" ? "SicherheitZuViel.wav" : "SicherheitZuWenig.wav";
+    file = reason === "zu hoch" ? "SicherheitZuViel.WAV" : "SicherheitZuWenig.WAV";
   }
   if (cat === "Zufriedenheit") {
-    file = reason === "zu hoch" ? "ZufriedenheitZuViel.wav" : "ZufriedenheitZuWenig.wav";
+    file = reason === "zu hoch" ? "ZufriedenheitZuViel.WAV" : "ZufriedenheitZuWenig.WAV";
   }
 
   currentGameOverSound = new Audio(file);
@@ -867,3 +867,4 @@ const card = create('article', cardClass);
 // --- Start ---
 renderBoard();
 updateBars();
+
