@@ -1,7 +1,10 @@
-// 4 Kategorien, Startwert je 5 Punkte, Limit 0–10
+
+let currentGameOverSound = null;
+
+
 const CATEGORIES = ["Bildung", "Sicherheit", "Zufriedenheit", "Finanzen"];
 
-// --- Dein volles MASTER-DECK (15 Fragen) ---
+
 const DECK = [
   {
     id: 1,
@@ -439,6 +442,40 @@ const RESCUE_CARDS = {
 };
 
 
+// --- Soundeffekte für Game Over / Rettung (WAV) ---
+const END_SOUNDS = {
+  Finanzen: {
+    high: new Audio('sounds/FinanzenZuViel.wav'),
+    low:  new Audio('sounds/FinanzenZuWenig.wav')
+  },
+  Bildung: {
+    high: new Audio('sounds/BildungZuViel.wav'),
+    low:  new Audio('sounds/BildungZuWenig.wav')
+  },
+  Sicherheit: {
+    high: new Audio('sounds/SicherheitZuViel.wav'),
+    low:  new Audio('sounds/SicherheitZuWenig.wav')
+  },
+  Zufriedenheit: {
+    high: new Audio('sounds/ZufriedenheitZuViel.wav'),
+    low:  new Audio('ZufriedenheitZuWenig.wav')
+  }
+};
+
+function playEndSound(cat, reason) {
+  const side = reason === 'zu niedrig' ? 'low' : 'high';
+  const sound = END_SOUNDS[cat] && END_SOUNDS[cat][side];
+  if (!sound) return;
+
+  try {
+    sound.currentTime = 0;
+    sound.play();
+  } catch (e) {
+    console.error("Sound konnte nicht abgespielt werden:", cat, reason, e);
+  }
+}
+
+
 
 
 
@@ -458,7 +495,7 @@ const state = {
   index: 0,
   history: [],
   scores: { Bildung: 5, Sicherheit: 5, Zufriedenheit: 5, Finanzen: 5 },
-  playDeck: sampleDeck(DECK, 7),
+  playDeck: sampleDeck(DECK, 10),
   rescueUsed: false,
   pendingRescue: false   // <<< neu
 };
@@ -508,24 +545,26 @@ function showPointsAnimation(effects) {
 }
 // --------------------------------------------------------------
 
-
 function checkGameOver() {
   for (const [cat, val] of Object.entries(state.scores)) {
-    
-    // --- Rettung vorher abfangen ---
+
+    // Rettung zuerst abfangen
     if (!state.rescueUsed && (val <= 0 || val >= 10)) {
       launchRescue(cat);
       return true;
     }
 
-    // --- echtes Game Over ---
+    // echtes Game Over NACH Rettung
     if (val <= 0 || val >= 10) {
-      showGameOver(cat, val <= 0 ? "zu niedrig" : "zu hoch");
+      const reason = val <= 0 ? "zu niedrig" : "zu hoch";
+      showGameOver(cat, reason);  // Sound kommt dort rein
       return true;
     }
   }
   return false;
 }
+
+
 
 
 function launchRescue(cat) {
@@ -602,8 +641,11 @@ const GAME_OVER_MESSAGES = {
 };
 
 
-
 function showGameOver(cat, reason) {
+
+  // 🎵 SOUND HIER – und NUR HIER
+  playEndSound(cat, reason);
+
   const board = $('#board');
   board.innerHTML = '';
   const wrap = create('div', 'card');
@@ -612,7 +654,9 @@ function showGameOver(cat, reason) {
   const end = create('div', 'end');
 
   const msgSet = GAME_OVER_MESSAGES[cat];
-  let msg = msgSet ? (reason === "zu niedrig" ? msgSet.low : msgSet.high) : `Deine Politik hat ${cat} zerstört.`;
+  let msg = msgSet
+    ? (reason === "zu niedrig" ? msgSet.low : msgSet.high)
+    : `Deine Politik hat ${cat} zerstört.`;
 
   end.innerHTML = `
     <h2>Spiel vorbei!</h2>
@@ -623,7 +667,6 @@ function showGameOver(cat, reason) {
   wrap.appendChild(end);
   board.appendChild(wrap);
 }
-
 
 
 
@@ -697,15 +740,49 @@ function showPointsAnimation(effects) {
 
 
 function restart() {
+   // 🎵 Laufenden GameOver-Sound stoppen
+  if (currentGameOverSound) {
+    currentGameOverSound.pause();
+    currentGameOverSound.currentTime = 0;
+    currentGameOverSound = null;
+  }
   state.index = 0;
   state.history = [];
   state.scores = { Bildung: 5, Sicherheit: 5, Zufriedenheit: 5, Finanzen: 5 };
-  state.playDeck = sampleDeck(DECK, 5);
+  state.playDeck = sampleDeck(DECK, 10);
   state.rescueUsed = false;
   state.pendingRescue = false;
 
   renderBoard();
   updateBars();
+}
+
+
+function playEndSound(cat, reason) {
+  // Wenn bereits ein Sound läuft → stoppen
+  if (currentGameOverSound) {
+    currentGameOverSound.pause();
+    currentGameOverSound.currentTime = 0;
+  }
+
+  let file = "";
+
+  if (cat === "Finanzen") {
+    file = reason === "zu hoch" ? "FinanzenZuViel.wav" : "FinanzenZuWenig.wav";
+  }
+  if (cat === "Bildung") {
+    file = reason === "zu hoch" ? "BildungZuViel.wav" : "BildungZuWenig.wav";
+  }
+  if (cat === "Sicherheit") {
+    file = reason === "zu hoch" ? "SicherheitZuViel.wav" : "SicherheitZuWenig.wav";
+  }
+  if (cat === "Zufriedenheit") {
+    file = reason === "zu hoch" ? "ZufriedenheitZuViel.wav" : "ZufriedenheitZuWenig.wav";
+  }
+
+  currentGameOverSound = new Audio(file);
+  currentGameOverSound.volume = 1.0;
+  currentGameOverSound.play().catch(() => {});
 }
 
 
