@@ -1,34 +1,156 @@
+/* =========================================================
+   DIKTATORSPIEL – Full Working Script
+   Intro: Satz-für-Satz + Mascot Animation
+   ========================================================= */
 
-let currentGameOverSound = null;
+/* ---------- Config ---------- */
+
+// Karten-ID -> Bilddatei (im Ordner /Bilder)
+// Tipp: Benenne sauber: exakt Dateinamen inkl. Endung
+const CARD_IMAGES = {
+  
+  2:"./Bilder/Polizei.png",
+  3:"./Bilder/Gebühren.png",
+  4:"./Bilder/Spätzle.png",
+  5:"./Bilder/Nahverkehr.png",
+  6: "./Bilder/Maultaschen.png",
+  7:"./Bilder/Schwarzwald.png",
+  8:"./Bilder/Brezel.png",
+  9:"./Bilder/Flughafen.png",
+  10:"./Bilder/Bodensee.png",
+  11:"./Bilder/Erbe.png",
+  12:"./Bilder/Bahnhof.png",
+  13:"./Bilder/Trachten.png",
+  14:"./Bilder/Dialektpflicht.png",
+  15:"./Bilder/Freibadverbot.png",
+  16:"./Bilder/Schwabentaler.png",
+  17:"./Bilder/Windrad.png",
+  19:"./Bilder/Bargeld.png",
+  20:"./Bilder/Alkohol.png",
+  24:"./Bilder/Religion.png",
+  25:"./Bilder/Viertage.png"
+  
+};
+
+// Für jede Karten-ID: Bild für links/rechts
+// Pfade anpassen: ich nehme an: ./Bilder/<DATEI>.png
+const DECISION_IMAGES = {
+  2:  { left: "./Artikel/PolizeiJa.png",  right: "./Artikel/PolizeiNein.png"  },
+  3:  { left: "./Artikel/GebührenJa.png",  right: "./Artikel/GebührenNein.png"  },
+  4:  { left: "./Artikel/SpatzleJa.png",  right: "./Artikel/SpatzleNein.png"  },
+  5:  { left: "./Artikel/NahverkehrJa.png",  right: "./Artikel/NahverkehrNein.png"  },
+  6:  { left: "./Artikel/MaultaschenVerbot.png",  right: "./Artikel/MaultaschenErlaubt.png"  },
+  7:  { left: "./Artikel/AbholzenJa.png",  right: "./Artikel/AbholzenNein.png"  },
+  8: { left: "./Aritkel/BrezelJa.png", right: "./Artikel/BrezelNein.png" },
+  9:  { left: "./Artikel/FlughafenJa.png",  right: "./Artikel/FlughafenNein.png"  },
+  10:  { left: "./Artikel/BodenseePrivatJa.png",  right: "./Artikel/BodenseePrivatNein.png"  },
+  11:  { left: "./Artikel/UhrJa.png",  right: "./Artikel/UhrNein.png"  }, 
+  12:  { left: "./Artikel/BahnhofJa.png",  right: "./Artikel/BahnhofNein.png"  },
+  13:  { left: "./Artikel/TrachtenJa.png",  right: "./Artikel/TrachtenNein.png"  },
+  14:  { left: "./Artikel/DialektJa.png",  right: "./Artikel/DialektNein.png"  }, 
+  15:  { left: "./Artikel/FreibadNein.png",  right: "./Artikel/FreibadJa.png"  },
+  16:  { left: "./Artikel/SchwabentalerJa.png",  right: "./Artikel/SchwabentalerNein.png"  },
+  17:  { left: "./Artikel/WindradJa.png",  right: "./Artikel/WindradNein.png"  }, 
+  19:  { left: "./Artikel/BargeldNein.png",  right: "./Artikel/BargeldJa.png"  },
+  20:  { left: "./Artikel/AlkoholVerbotJa.png",  right: "./Artikel/AlkoholVerbotNein.png"  },
+  21:  { left: "./Artikel/UhrJa.png",  right: "./Artikel/UhrNein.png"  }, 
+  24:  { left: "./Artikel/ReligionVerbotJa.png",  right: "./Artikel/ReligionVerbotNein.png"  },
+  25:  { left: "./Artikel/VierTageJa.png",  right: "./Artikel/VierTageNein.png"  },
+   
+};
+
+
 
 
 const CATEGORIES = ["Bildung", "Sicherheit", "Zufriedenheit", "Finanzen"];
 
+const SCORE_MIN = 0;
+const SCORE_MAX = 10;
+const START_SCORE = 5;
+
+/* ---------- Intro Dialog / Mascot ---------- */
+const INTRO_SENTENCES = [
+  "Hallo, mein/e Führer/in!",
+  "Heute schlüpfst du in die Rolle eines waschechten Diktators!",
+  "Deine Aufgabe wird es sein, das Land nach deinen Vorstellungen zu formen und zu regieren.",
+  "Doch pass auf: Deine Entscheidungen bringen Konsequenzen mit sich.",
+  "Achte daher darauf, die Dinge immer im Gleichgewicht zu halten.",
+  "Viel Erfolg und ein gutes Gelingen!"
+];
+
+// Wie viele Bildwechsel (Mund zu/auf) pro Satz
+const INTRO_IMAGES_PER_LINE = 6;
+
+// Tempo der Bildwechsel (ms)
+const INTRO_FRAME_INTERVAL_MS = 140;
+
+// Mascot Frames
+const MASCOT_FRAMES = {
+  idle: "./icons/MundZuAugenAuf.png",
+  talk: "./icons/MundAufAugenAuf.png",
+  blink: "./icons/MundAufAugenZu.png"
+};
+
+/* ---------- Event-System ---------- */
+const EVENT_TIMER_SECONDS = 10;
+const EVENT_CHANCE_PER_TURN = 0.05;
+
+const MUSIC_MUTE_KEY = "diktatorspiel-music-muted";
+let musicMuted = false;
+
+
+function loadMusicMute() {
+  const saved = localStorage.getItem(MUSIC_MUTE_KEY);
+  musicMuted = saved === "1";
+}
+
+function setMusicMuted(on) {
+  musicMuted = !!on;
+  localStorage.setItem(MUSIC_MUTE_KEY, musicMuted ? "1" : "0");
+  applyVolumeToAllSounds();
+  updateMusicToggleBtn();
+}
+
+function updateMusicToggleBtn() {
+  const btn = document.getElementById("music-toggle");
+  if (!btn) return;
+  btn.textContent = musicMuted ? "Musik: AUS" : "Musik: AN";
+}
+
+
+
+/* ---------- Volume ---------- */
+const VOLUME_KEY = "diktatorspiel-volume";
+let masterVolume = 1.0;
+
+/* =========================================================
+   DOM helpers (MUSS VOR renderBoard existieren)
+   ========================================================= */
+const $ = (sel, el = document) => el.querySelector(sel);
+
+const create = (tag, cls) => {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  return n;
+};
+
+
+
+/* =========================================================
+   DATA: Deck / Rescue / Events / Messages
+   ========================================================= */
+
 
 const DECK = [
-  {
-    id: 1,
-    prompt: "Bauern fordern Subventionen (finanzielle unterstützung) für die Schweinezucht.",
-    meta: "Finanzen",
-    left:  {
-      label: "Sie bekommen das Geld",
-      consequence: "Bauern werden fett und faul. Cholesterinrate steigt im Land.",
-      effects: { Finanzen: -2, Zufriedenheit: +2, Bildung: -1 }
-    },
-    right: {
-      label: "Sie bekommen kein Geld",
-      consequence: "Bauern und Schweine streiken. Veganer Partei gewinnt nächste Wahl.",
-      effects: { Finanzen: +1, Zufriedenheit: -2 }
-    }
-  },
+  
   {
     id: 2,
     prompt: "Polizei fordert doppelt so viel Geld, um Bevölkerung besser zu kontrolieren.",
     meta: "Sicherheit",
-    left:  {
+    left: {
       label: "Finanzieren",
       consequence: "Land ist sicherer, aber niemand traut sich mehr aus dem Haus.",
-      effects: { Sicherheit: +2, Zufriedenheit:-2, Finanzen: -1 }
+      effects: { Sicherheit: +2, Zufriedenheit: -2, Finanzen: -1 }
     },
     right: {
       label: "Nicht Finanzieren",
@@ -38,39 +160,43 @@ const DECK = [
   },
   {
     id: 3,
-    prompt: "Wissenschaftler wollen Klone für die Arbeit züchten.",
+    prompt: "Studiengebühren sollen erhöht werden.",
     meta: "Finanzen",
-    left:  {
+    left: {
       label: "Zustimmen",
-      consequence: "Wirtschaft boomt, jedoch weiß keiner, wer das Original ist.",
-      effects: { Finanzen: +2, Bildung: +1, Zufriedenheit: -1, Sicherheit: -2 }
+      consequence: "Leute wollen nicht mehr studieren gehen.",
+      effects: { Finanzen: +1, Bildung: -2 }
     },
     right: {
       label: "Ablehnen",
-      consequence: "Forschung wandert ab. Weniger Wachstum, weniger ethische Konflikte.",
-      effects: { Finanzen: -1, Zufriedenheit: +2, Bildung: -1 }
+      consequence: "Mehr Leute gehen studieren.",
+      effects: { Finanzen: -1, Bildung: +1 }
     }
   },
-  {
-    id: 4,
-    prompt: "Alle Social-Media-Nachrichten sollen überwacht werden.",
-    meta: "Zufriedenheit",
-    left:  {
-      label: "Zulassen",
-      consequence: "Bürger haben Angst, ihre Meinung zu äußern.",
-      effects: { Sicherheit: +2, Zufriedenheit: -2 }
-    },
-    right: {
-      label: "Ablehnen",
-      consequence: "Freie Chats; Inhalte bleiben ungefiltert.",
-      effects: { Sicherheit: -1, Zufriedenheit: +2 }
-    }
-  },
+  //
+  
+  //{
+   // id: 4,
+    //prompt: "Subventionen ( Finanzielle unterstützung) für Spätzle Produzenten.",
+    //meta: "Zufriedenheit",
+    //left: {
+     // label: "Unterstützen",
+      //consequence: "Der Spätzlemarkt Boomt wie noch nie zuvor.",
+     // effects: { Finanzen: -1, Zufriedenheit: +1 }
+   // },
+   // right: {
+      //label: "Nicht Unterstützen",
+     // consequence: "Spätzle Produzenten gehen pleite.",
+    //  effects: { Finanzen: +1, Zufriedenheit: -2}
+    //}
+
+    //
+  //},
   {
     id: 5,
     prompt: "Schüler fordern kostenlosen Nahverkehr zur Schule.",
     meta: "Bildung",
-    left:  {
+    left: {
       label: "Finanzieren",
       consequence: "Budget sinkt, mehr Schüler in der Schule; einer heilt später Krebs.",
       effects: { Bildung: +2, Zufriedenheit: +1, Finanzen: -2 }
@@ -88,7 +214,7 @@ const DECK = [
     left: {
       label: "Zulassen",
       consequence: "Bevölkerung ist empört. Illegale Maultaschenringe entstehen.",
-      effects: { Sicherheit: -2, Zufriedenheit: -1, Finanzen: +1  }
+      effects: { Sicherheit: -2, Zufriedenheit: -1, Finanzen: +1 }
     },
     right: {
       label: "Ablehnen",
@@ -117,12 +243,12 @@ const DECK = [
     meta: "Finanzen",
     left: {
       label: "Zulassen",
-      consequence: "Straßen werden saniert, jedoch ist der Zorn der Bäcker grenzenlos. Der Preis der Brezel steigt auf 5€.",
+      consequence: "Straßen werden saniert, jedoch ist der Zorn der Bäcker grenzenlos.",
       effects: { Zufriedenheit: -1, Finanzen: +2 }
     },
     right: {
       label: "Ablehnen",
-      consequence: "Die Straßen sind weiterhin kaputt, jedoch können die Bürger in Ruhe ihre Brezeln frühstücken.",
+      consequence: "Straßen bleiben kaputt, aber Brezeln bleiben günstig.",
       effects: { Sicherheit: -1, Zufriedenheit: +2 }
     }
   },
@@ -132,7 +258,7 @@ const DECK = [
     meta: "Finanzen",
     left: {
       label: "Zulassen",
-      consequence: "Wirtschaft profitiert, jedoch sterben seltene Tierarten aus. Demonstranten gehen auf die Straße.",
+      consequence: "Wirtschaft profitiert, Tierarten sterben aus.",
       effects: { Zufriedenheit: -1, Finanzen: +2, Bildung: -2 }
     },
     right: {
@@ -147,12 +273,12 @@ const DECK = [
     meta: "Finanzen",
     left: {
       label: "Zulassen",
-      consequence: "Luxushotels krallen sich die Grundstücke. Bodensee darf nur noch gegen Gebühr betreten werden.",
+      consequence: "Luxushotels übernehmen das Ufer.",
       effects: { Zufriedenheit: -2, Finanzen: +2 }
     },
     right: {
       label: "Ablehnen",
-      consequence: "Ufer bleiben öffentlich, jedoch gehen eine Menge Einnahmen verloren.",
+      consequence: "Ufer bleiben öffentlich.",
       effects: { Finanzen: -2, Zufriedenheit: +2 }
     }
   },
@@ -162,12 +288,12 @@ const DECK = [
     meta: "Bildung",
     left: {
       label: "Fördern",
-      consequence: "Traditionen leben auf, jedoch leidet das Budget an der Uhrenoffensive.",
+      consequence: "Traditionen leben auf.",
       effects: { Zufriedenheit: +2, Finanzen: -1, Bildung: +1 }
     },
     right: {
       label: "Nicht fördern",
-      consequence: "Alte Handwerksbetriebe sterben aus. Bevölkerung ist enttäuscht.",
+      consequence: "Handwerk stirbt langsam aus.",
       effects: { Zufriedenheit: -1, Finanzen: -1 }
     }
   },
@@ -177,12 +303,12 @@ const DECK = [
     meta: "Finanzen",
     left: {
       label: "Vergrößern",
-      consequence: "Baustelle wird endlich fertig – 2038. Bürger sind wütend.",
+      consequence: "Baustelle bis 2038.",
       effects: { Zufriedenheit: -2, Finanzen: -1 }
     },
     right: {
       label: "Nicht vergrößern",
-      consequence: "Es herrscht weiterhin absolutes Chaos.",
+      consequence: "Chaos bleibt.",
       effects: { Finanzen: -1, Zufriedenheit: -1 }
     }
   },
@@ -192,12 +318,12 @@ const DECK = [
     meta: "Zufriedenheit",
     left: {
       label: "Zulassen",
-      consequence: "Heimatgefühl wächst, aber Individualisten und Jugendliche rebellieren.",
+      consequence: "Jugend rebelliert.",
       effects: { Zufriedenheit: -1, Finanzen: +1, Bildung: -1 }
     },
     right: {
       label: "Ablehnen",
-      consequence: "Modefreiheit bleibt, aber Touristen beschweren sich über den fehlenden Flair.",
+      consequence: "Touristen enttäuscht.",
       effects: { Finanzen: -1, Zufriedenheit: +1, Bildung: +1 }
     }
   },
@@ -207,58 +333,58 @@ const DECK = [
     meta: "Bildung",
     left: {
       label: "Einführen",
-      consequence: "Kinder reden wieder schwäbisch. D‘Kender schwätzad etz wieder Schwäbisch. D‘Lehrer send am Verzweifla bei de Grammatikaufgab.",
+      consequence: "Kinder schwätzen wieder schwäbisch.",
       effects: { Zufriedenheit: -1, Bildung: -2 }
     },
     right: {
       label: "Nicht einführen",
-      consequence: "Hochdeutsch setzt sich durch und Dialekte sterben aus.",
+      consequence: "Dialekte sterben.",
       effects: { Zufriedenheit: -1, Bildung: +2 }
     }
   },
-    {
+  {
+    id: 15,
+    prompt: "Freibäder sollen verboten werden, um Wasser zu sparen.",
+    meta: "Sicherheit",
+    left: {
+      label: "Verbieten",
+      consequence: "Private Pools explodieren.",
+      effects: { Zufriedenheit: -1, Bildung: +1, Finanzen: -1, Sicherheit: -1 }
+    },
+    right: {
+      label: "Nicht verbieten",
+      consequence: "Rettungsschwimmer fehlen.",
+      effects: { Zufriedenheit: +1, Finanzen: +1, Sicherheit: +1 }
+    }
+  },
+  {
     id: 16,
-    prompt: "Einführung des 'Schwobentalers' – eigene Landeswährung.",
+    prompt: "Einführung des Schwobentalers – eigene Landeswährung.",
     meta: "Finanzen",
-    left:  {
+    left: {
       label: "Einführen",
-      consequence: "Wirtschaft steht auf dem Kopf. Schwobentaler geht nach hinten los. Menschen beschäftigen sichh mehr mit Finanzen",
+      consequence: "Chaos an den Märkten.",
       effects: { Finanzen: -1, Zufriedenheit: -1, Bildung: +1 }
     },
     right: {
-      label: "Nicht Einführen",
-      consequence: "Euro bleibt stabil, jedoch beschäftigt sich niemand mit der Wirtschaft",
+      label: "Nicht einführen",
+      consequence: "Euro bleibt.",
       effects: { Finanzen: -1 }
     }
   },
-    {
+  {
     id: 17,
-    prompt: "Ausbau von Windräden auf Schwarzwald-Gipfeln.",
-    meta: "Finanzen",
-    left:  {
-      label: "Bauen",
-      consequence: "Strompreise sind deutlich günstiger, aber die Anwohner sind genervt von den Baustellen",
-      effects: { Finanzen: +2, Zufriedenheit: -1,}
-    },
-    right: {
-      label: "Nicht Bauen",
-      consequence: "Strompreise explodierenm jedoch bleibt Natur erhalten",
-      effects: { Finanzen: -1, Zufriedenheit: +1 }
-    }
-  },
-    {
-    id: 18,
-    prompt: "Verstaatlichung aller Banken.",
+    prompt: "Ausbau von Windrädern auf Schwarzwald-Gipfeln.",
     meta: "Finanzen",
     left: {
-      label: "Umsetzen",
-      consequence: "Staat kontrolliert das Geld, Bürokratie explodiert.",
-      effects: { Finanzen: -1, Zufriedenheit: -1 }
+      label: "Bauen",
+      consequence: "Strom günstiger, Anwohner genervt.",
+      effects: { Finanzen: +2, Zufriedenheit: -1 }
     },
     right: {
-      label: "Ablehnen",
-      consequence: "Reiche werden reicher, Bürger fühlen sich ohnmächtig.",
-      effects: { Finanzen: +1, Zufriedenheit: -1 }
+      label: "Nicht bauen",
+      consequence: "Strom teuer.",
+      effects: { Finanzen: -1, Zufriedenheit: +1 }
     }
   },
   {
@@ -267,121 +393,58 @@ const DECK = [
     meta: "Sicherheit",
     left: {
       label: "Umsetzen",
-      consequence: "Steuerhinterziehung sinkt, ältere Menschen überfordert.",
-      effects: { Sicherheit: +1, Zufriedenheit: -1 } 
+      consequence: "Steuerhinterziehung sinkt.",
+      effects: { Sicherheit: +1, Zufriedenheit: -1 }
     },
     right: {
       label: "Ablehnen",
-      consequence: "Schattenwirtschaft boomt.",
+      consequence: "Schattenwirtschaft wächst.",
       effects: { Sicherheit: -1, Zufriedenheit: +1 }
     }
   },
   {
     id: 20,
     prompt: "Verbot von Alkohol.",
-    meta: "Gesundheit",
+    meta: "Zufriedenheit",
     left: {
       label: "Umsetzen",
-      consequence: "Produktivität steigt, Schwarzmarkt wächst.",
+      consequence: "Schwarzmarkt wächst.",
       effects: { Sicherheit: -1, Bildung: +1 }
     },
     right: {
       label: "Ablehnen",
-      consequence: "Bürger feiern, Krankenhäuser voll.",
+      consequence: "Krankenhäuser voll.",
       effects: { Zufriedenheit: +1, Sicherheit: -1 }
     }
   },
   {
-    id: 21,
-    prompt: "Einführung einer Ehepflicht.",
-    meta: "Zufriedenheit",
-    left: {
-      label: "Umsetzen",
-      consequence: "Hochzeiten überall, Scheidungen explodieren.",
-      effects: { Zufriedenheit: -1 }
-    },
-    right: {
-      label: "Ablehnen",
-      consequence: "Freiheit bleibt, Geburtenrate sinkt.",
-      effects: { Zufriedenheit: +1 }
-    }
-  },
-  {
-    id: 22,
-    prompt: "Jeder Bürger muss einen Baum pflanzen.",
-    meta: "Sicherheit",
-    left: {
-      label: "Umsetzen",
-      consequence: "Städte werden grün, aber Organisation kostet Milliarden.",
-      effects: { Sicherheit: +1, Finanzen: -2 }
-    },
-    right: {
-      label: "Ablehnen",
-      consequence: "Umwelt bleibt trist.",
-      effects: { Zufriedenheit: -1, Sicherheit: -1 }
-    }
-  },
-
- {
-    id: 23,
-    prompt: "Einführung von Uniformen für alle Bürger.",
-    meta: "Sicherheit",
-    left: {
-      label: "Umsetzen",
-      consequence: "Ordnung steigt, Individualität verschwindet.",
-      effects: { Sicherheit: +1, Zufriedenheit: -1 }
-    },
-    right: {
-      label: "Ablehnen",
-      consequence: "Vielfalt bleibt, aber Neid wächst.",
-      effects: { Sicherheit: -1, Zufriedenheit: +1 }
-    }
-  },
-   {
     id: 24,
     prompt: "Verbot von Religion.",
     meta: "Sicherheit",
     left: {
       label: "Umsetzen",
-      consequence: "Weniger Konflikte, Menschen fühlen Leere.",
+      consequence: "Leere im Land.",
       effects: { Sicherheit: +1, Zufriedenheit: -2 }
     },
     right: {
       label: "Ablehnen",
-      consequence: "Vielfalt blüht, Glaubensstreit eskaliert.",
+      consequence: "Glaubensstreit eskaliert.",
       effects: { Sicherheit: -1, Zufriedenheit: +1 }
     }
   },
-
-{
+  {
     id: 25,
-    prompt: "Erhöhung der Staatsausgaben für Propaganda.",
+    prompt: "Einführung einer 4-Tage Woche.",
     meta: "Zufriedenheit",
     left: {
       label: "Umsetzen",
-      consequence: "Alle Medien loben dich, niemand glaubt ihnen.",
-      effects: { Zufriedenheit: -1, Bildung: -1 }
+      consequence: "Leute haben mehr Freizeit, aber Wirtschaft leidet.",
+      effects: { Zufriedenheit: +2, Finanzen: -1 }
     },
     right: {
       label: "Ablehnen",
-      consequence: "Presse bleibt kritisch, Beliebtheit sinkt.",
-      effects: { Zufriedenheit: -1, Bildung: +1 }
-    }
-  },
-
-  {
-    id: 15,
-    prompt: "Freibäder sollen verboten werden, um Wasser zu sparen und Unfälle zu vermeiden.",
-    meta: "Sicherheit",
-    left: {
-      label: "Verbieten",
-      consequence: "Die Bevölkerung hat angefangen, eigene Pools zu bauen, wodurch es zu vielen Verletzten gekommen ist.",
-      effects: { Zufriedenheit: -1, Bildung: +1, Finanzen: -1, Sicherheit: -1 }
-    },
-    right: {
-      label: "Nicht verbieten",
-      consequence: "Die Nachfrage nach Schwimmbädern schoss in die Höhe. Noch nie wurden so viele Rettungsschwimmer benötigt.",
-      effects: { Zufriedenheit: +1, Finanzen: +1, Sicherheit: +1 }
+      consequence: "Bevölkerung ist entäuscht.",
+      effects: { Zufriedenheit: -1, Finanzen: +1 }
     }
   }
 ];
@@ -389,237 +452,46 @@ const DECK = [
 
 const RESCUE_CARDS = {
   Zufriedenheit: [
-    {
-      prompt: "Du kannst die Bevölkerung durch eine große Gratis-Show beruhigen.",
-      left:  { label: "Show finanzieren (-5 Finanzen)", effects: { Zufriedenheit: +4, Finanzen: -5 }},
-      right: { label: "Show absagen", effects: {} }
-    },
-    {
-      prompt: "Du kannst eine landesweite PR-Kampagne starten.",
-      left:  { label: "Kampagne starten (-3 Bildung)", effects: { Zufriedenheit: +3, Bildung: -3 }},
-      right: { label: "Nicht starten", effects: {} }
-    }
+    { prompt: "Du kannst die Bevölkerung durch eine große Gratis-Show beruhigen.", left: { label: "Show finanzieren (-5 Finanzen)", effects: { Zufriedenheit: +4, Finanzen: -5 } }, right: { label: "Show absagen", effects: {} } },
+    { prompt: "Du kannst eine landesweite PR-Kampagne starten.", left: { label: "Kampagne starten (-3 Bildung)", effects: { Zufriedenheit: +3, Bildung: -3 } }, right: { label: "Nicht starten", effects: {} } }
   ],
-
   Sicherheit: [
-    {
-      prompt: "Geheime Eliteeinheit einsetzen?",
-      left:  { label: "Einsetzen (-4 Finanzen)", effects: { Sicherheit: +4, Finanzen: -4 }},
-      right: { label: "Nein", effects: {} }
-    },
-    {
-      prompt: "Strengere Gesetze erlassen?",
-      left:  { label: "Erlassen (-3 Zufriedenheit)", effects: { Sicherheit: +3, Zufriedenheit: -3 }},
-      right: { label: "Nein", effects: {} }
-    }
+    { prompt: "Geheime Eliteeinheit einsetzen?", left: { label: "Einsetzen (-4 Finanzen)", effects: { Sicherheit: +4, Finanzen: -4 } }, right: { label: "Nein", effects: {} } },
+    { prompt: "Strengere Gesetze erlassen?", left: { label: "Erlassen (-3 Zufriedenheit)", effects: { Sicherheit: +3, Zufriedenheit: -3 } }, right: { label: "Nein", effects: {} } }
   ],
-
   Bildung: [
-    {
-      prompt: "Elite-Unis fördern?",
-      left:  { label: "Fördern (-4 Finanzen)", effects: { Bildung: +4, Finanzen: -4 }},
-      right: { label: "Nein", effects: {} }
-    },
-    {
-      prompt: "Unis von Experten leiten?",
-      left:  { label: "Einsetzen (-3 Zufriedenheit)", effects: { Bildung: +3, Zufriedenheit: -3 }},
-      right: { label: "Nein", effects: {} }
-    }
+    { prompt: "Elite-Unis fördern?", left: { label: "Fördern (-4 Finanzen)", effects: { Bildung: +4, Finanzen: -4 } }, right: { label: "Nein", effects: {} } },
+    { prompt: "Unis von Experten leiten?", left: { label: "Einsetzen (-3 Zufriedenheit)", effects: { Bildung: +3, Zufriedenheit: -3 } }, right: { label: "Nein", effects: {} } }
   ],
-
   Finanzen: [
-    {
-      prompt: "Schwarze Kassen öffnen?",
-      left:  { label: "Öffnen (-4 Sicherheit)", effects: { Finanzen: +4, Sicherheit: -4 }},
-      right: { label: "Nein", effects: {} }
-    },
-    {
-      prompt: "Einmalige Steuererhöhung?",
-      left:  { label: "Einführen (-3 Zufriedenheit)", effects: { Finanzen: +3, Zufriedenheit: -3 }},
-      right: { label: "Nein", effects: {} }
-    }
+    { prompt: "Schwarze Kassen öffnen?", left: { label: "Öffnen (-4 Sicherheit)", effects: { Finanzen: +4, Sicherheit: -4 } }, right: { label: "Nein", effects: {} } },
+    { prompt: "Einmalige Steuererhöhung?", left: { label: "Einführen (-3 Zufriedenheit)", effects: { Finanzen: +3, Zufriedenheit: -3 } }, right: { label: "Nein", effects: {} } }
   ]
 };
 
-
-// --- Soundeffekte für Game Over / Rettung (WAV) ---
-const END_SOUNDS = {
-  Finanzen: {
-    high: new Audio('sounds/FinanzenZuViel.wav'),
-    low:  new Audio('sounds/FinanzenZuWenig.wav')
+const EVENT_DECK = [
+  {
+    id: "E1",
+    prompt: "⚠️ Stromausfall im ganzen Land. Sofort reagieren?",
+    left: { label: "Notfallplan aktivieren", consequence: "Strom kommt schneller zurück, kostet aber Geld.", effects: { Sicherheit: +1, Finanzen: -2, Zufriedenheit: +1 } },
+    right:{ label: "Ignorieren", consequence: "Chaos, Plünderungen, Wut.", effects: { Sicherheit: -2, Zufriedenheit: -1 } },
+    timeout:{ consequence: "Zu langsam. Das Chaos nimmt seinen Lauf.", effects: { Sicherheit: -2, Zufriedenheit: -1 , Finanzen: -1} }
   },
-  Bildung: {
-    high: new Audio('sounds/BildungZuViel.wav'),
-    low:  new Audio('sounds/BildungZuWenig.wav')
+  {
+    id: "E2",
+    prompt: "⚠️ In deinem Land ensteht eine Rebellion!",
+    left: { label: "Angreifen", consequence: "Du vernichtest sie und die Bevölkerung erzittert.", effects: { Sicherheit: +2, Finanzen: -1, Zufriedenheit: -2 } },
+    right:{ label: "Verhandeln", consequence: "Ihr kommt auf einen Kompromiss, doch wirkt Schwach auf die Bevölkerung.", effects: { Sicherheit: -2, Zufriedenheit: +2 } },
+    timeout:{ consequence: "Die Rebellen richten großen Schaden an.", effects: { Sicherheit: -1, Zufriedenheit: -1 , Finanzen: -1} }
   },
-  Sicherheit: {
-    high: new Audio('sounds/SicherheitZuViel.wav'),
-    low:  new Audio('sounds/SicherheitZuWenig.wav')
-  },
-  Zufriedenheit: {
-    high: new Audio('sounds/ZufriedenheitZuViel.wav'),
-    low:  new Audio('ZufriedenheitZuWenig.wav')
+  {
+    id: "E3",
+    prompt: "⚠️ Skandalvideo über dich geht viral. Statement?",
+    left: { label: "Abwiegeln", consequence: "Einige glauben es, andere werden misstrauisch.", effects: { Zufriedenheit: -1, Bildung: -1 } },
+    right:{ label: "Transparenz", consequence: "Du wirkst menschlich, aber machst dich angreifbar.", effects: { Zufriedenheit: +1, Sicherheit: -1 } },
+    timeout:{ consequence: "Kein Statement. Die Gerüchte gewinnen.", effects: { Zufriedenheit: -2 } }
   }
-};
-
-function playEndSound(cat, reason) {
-  const side = reason === 'zu niedrig' ? 'low' : 'high';
-  const sound = END_SOUNDS[cat] && END_SOUNDS[cat][side];
-  if (!sound) return;
-
-  try {
-    sound.currentTime = 0;
-    sound.play();
-  } catch (e) {
-    console.error("Sound konnte nicht abgespielt werden:", cat, reason, e);
-  }
-}
-
-
-
-
-
-// --- Zufällige Karten ziehen ---
-function sampleDeck(base, n) {
-  const arr = base.slice();
-  if (arr.length === 0) return [];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr.slice(0, Math.min(n, arr.length));
-}
-
-// --- Spielzustand ---
-const state = {
-  index: 0,
-  history: [],
-  scores: { Bildung: 5, Sicherheit: 5, Zufriedenheit: 5, Finanzen: 5 },
-  playDeck: sampleDeck(DECK, 10),
-  rescueUsed: false,
-  pendingRescue: false   // <<< neu
-};
-
-
-
-// --- Hilfsfunktionen ---
-const $ = (sel, el=document) => el.querySelector(sel);
-const create = (tag, cls) => { const n = document.createElement(tag); if (cls) n.className = cls; return n; };
-
-function updateProgress() {
-  const p = Math.round((state.index / state.playDeck.length) * 100);
-  $('#bar').style.width = p + '%';
-}
-
-function updateBars() {
-  for (const cat of CATEGORIES) {
-    const el = document.getElementById('bar-' + cat);
-    if (!el) continue;
-    const val = state.scores[cat];
-    const percent = (val / 10) * 100;
-    el.style.width = percent + '%';
-    el.style.background = val <= 2 || val >= 8 ? '#ff1d1d' : 'linear-gradient(90deg, #ff5864, #ff9a56)';
-  }
-}
-
-// --------------------------------------------------------------
-//  PUNKTE-ANIMATION (NEU)
-// --------------------------------------------------------------
-function showPointsAnimation(effects) {
-  const board = document.getElementById("board");
-
-  const wrap = document.createElement("div");
-  wrap.className = "points-float";
-
-  wrap.innerHTML = Object.entries(effects)
-    .map(([cat, val]) => {
-      const cls = val > 0 ? "points-positive" : "points-negative";
-      const sign = val > 0 ? "+" : "";
-      return `<div class="${cls}">${sign}${val} ${cat}</div>`;
-    })
-    .join("");
-
-  board.appendChild(wrap);
-
-  setTimeout(() => wrap.remove(), 5000);
-}
-// --------------------------------------------------------------
-
-function checkGameOver() {
-  for (const [cat, val] of Object.entries(state.scores)) {
-
-    // Rettung zuerst abfangen
-    if (!state.rescueUsed && (val <= 0 || val >= 10)) {
-      launchRescue(cat);
-      return true;
-    }
-
-    // echtes Game Over NACH Rettung
-    if (val <= 0 || val >= 10) {
-      const reason = val <= 0 ? "zu niedrig" : "zu hoch";
-      showGameOver(cat, reason);  // Sound kommt dort rein
-      return true;
-    }
-  }
-  return false;
-}
-
-
-
-
-function launchRescue(cat) {
-  state.rescueUsed = true;
-  state.pendingRescue = true;
-
-  const options = RESCUE_CARDS[cat];
-  const rescueCard = options[Math.floor(Math.random() * options.length)];
-
-  const board = document.getElementById("board");
-  board.innerHTML = "";
-
-  const card = create("article", "card rescue above"); // <<< direkt rescue setzen
-
-  const prompt = create("div", "prompt");
-  prompt.textContent = "⚠️ Du stehst kurz vor dem Verlust!\n" + rescueCard.prompt;
-
-  const choices = create("div", "choices");
-
-  const btnLeft = create("button", "btn btn-left");
-  btnLeft.textContent = rescueCard.left.label;
-  
-  const btnRight = create("button", "btn btn-right");
-  btnRight.textContent = rescueCard.right.label;
-
-  btnLeft.addEventListener("click", () => {
-    applyRescueEffects(rescueCard.left.effects);
-    state.pendingRescue = false;
-    renderBoard();
-  });
-
-  btnRight.addEventListener("click", () => {
-    state.pendingRescue = false; 
-    renderBoard();
-  });
-
-  choices.append(btnLeft, btnRight);
-
-  card.append(prompt, document.createElement("div"), choices);
-  board.appendChild(card);
-}
-
-
-function applyRescueEffects(effects) {
-  for (const [cat, val] of Object.entries(effects)) {
-    state.scores[cat] += val;
-    state.scores[cat] = Math.max(0, Math.min(10, state.scores[cat]));
-  }
-
-  updateBars();
-  state.pendingRescue = false;
-}
-
-
-
+];
 
 const GAME_OVER_MESSAGES = {
   Bildung: {
@@ -640,21 +512,697 @@ const GAME_OVER_MESSAGES = {
   }
 };
 
+/* ---------- Validation ---------- */
+function validateData() {
+  const known = new Set(CATEGORIES);
+  const warn = (msg, obj) => console.warn(`[DATA] ${msg}`, obj);
+
+  for (const card of DECK) {
+    if (!card || typeof card !== "object") continue;
+    if (card.meta && !known.has(card.meta)) warn(`Unbekannte meta-Kategorie "${card.meta}" (Karte id=${card.id})`, card);
+    for (const s of ["left", "right"]) {
+      const eff = card?.[s]?.effects;
+      if (!eff) continue;
+      for (const k of Object.keys(eff)) if (!known.has(k)) warn(`Unbekannte effects-Kategorie "${k}" (Karte id=${card.id}, side=${s})`, card);
+    }
+  }
+
+  for (const ev of EVENT_DECK) {
+    for (const s of ["left", "right", "timeout"]) {
+      const eff = ev?.[s]?.effects;
+      if (!eff) continue;
+      for (const k of Object.keys(eff)) if (!known.has(k)) warn(`Unbekannte Event-effects-Kategorie "${k}" (Event id=${ev.id}, side=${s})`, ev);
+    }
+  }
+}
+
+
+function buildIllustrationForCard(cardData) {
+  const src = CARD_IMAGES[cardData.id];
+  if (!src) return null;
+
+  const wrap = create("div", "illustration");
+
+  const img = document.createElement("img");
+  img.src = src;
+  img.alt = `Illustration zu Karte ${cardData.id}`;
+  img.loading = "eager";
+
+  // Falls Datei fehlt -> Bildslot komplett entfernen (sauberer)
+  img.addEventListener("error", () => {
+    console.warn("[IMG] nicht gefunden:", src, "(Karte id=" + cardData.id + ")");
+    wrap.remove();
+  });
+
+  wrap.appendChild(img);
+  return wrap;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* =========================================================
+   Core: Random draw + State
+   ========================================================= */
+
+function sampleDeck(base, n) {
+  const arr = base.slice();
+  if (arr.length === 0) return [];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr.slice(0, Math.min(n, arr.length));
+}
+
+const state = {
+  index: 0,
+  history: [],
+  scores: {
+    Bildung: START_SCORE,
+    Sicherheit: START_SCORE,
+    Zufriedenheit: START_SCORE,
+    Finanzen: START_SCORE
+  },
+
+  startScreenDone: false,
+  introLineIndex: 0,
+  introDone: false,
+
+  playDeck: sampleDeck(DECK, 10),
+  rescueUsed: false,
+
+  eventActive: false,
+  eventSeenThisTurn: false
+};
+
+
+
+/* =========================================================
+   UI: progress & scoreboard
+   ========================================================= */
+
+function updateProgress() {
+  const total = state.playDeck.length || 1;
+  const p = Math.round((state.index / total) * 100);
+  const bar = $("#bar");
+  if (bar) bar.style.width = p + "%";
+}
+
+function updateBars() {
+  for (const cat of CATEGORIES) {
+    const el = document.getElementById("bar-" + cat);
+    if (!el) continue;
+
+    const val = state.scores[cat];
+    const percent = (val / SCORE_MAX) * 100;
+
+    el.style.width = percent + "%";
+    el.style.background = "#FDF6EA"; // IMMER weiß
+  }
+}
+
+
+/* =========================================================
+   Points overlay
+   ========================================================= */
+
+function showPointsAnimation(effects) {
+  const overlay = document.getElementById("points-overlay");
+  if (!overlay) return;
+
+  const wrap = document.createElement("div");
+  wrap.className = "points-float";
+
+  wrap.innerHTML = Object.entries(effects)
+    .map(([cat, val]) => {
+      const cls = val >= 0 ? "points-positive" : "points-negative";
+      const sign = val >= 0 ? "+" : "";
+      return `<div class="${cls}">${cat}: ${sign}${val}</div>`;
+    })
+    .join("");
+
+  overlay.appendChild(wrap);
+  setTimeout(() => wrap.remove(), 1300);
+}
+
+/* =========================================================
+   Volume
+   ========================================================= */
+
+function loadVolume() {
+  const saved = localStorage.getItem(VOLUME_KEY);
+  if (saved !== null) {
+    const v = Number(saved);
+    if (!Number.isNaN(v)) masterVolume = Math.min(1, Math.max(0, v));
+  }
+}
+
+function setVolume(v01) {
+  masterVolume = Math.min(1, Math.max(0, v01));
+  localStorage.setItem(VOLUME_KEY, String(masterVolume));
+  applyVolumeToAllSounds();
+}
+
+function initMusicToggle() {
+  const btn = document.getElementById("music-toggle");
+  if (!btn) return;
+
+  updateMusicToggleBtn();
+  btn.addEventListener("click", () => setMusicMuted(!musicMuted));
+}
+
+
+function initVolumeSlider() {
+  const slider = document.getElementById("volume");
+  if (!slider) return;
+
+  slider.value = String(Math.round(masterVolume * 100));
+  slider.addEventListener("input", () => setVolume(Number(slider.value) / 100));
+}
+
+/* =========================================================
+   Sound
+   ========================================================= */
+
+let currentGameOverSound = null;
+
+function stopCurrentSound() {
+  if (!currentGameOverSound) return;
+  currentGameOverSound.pause();
+  currentGameOverSound.currentTime = 0;
+  currentGameOverSound = null;
+}
+
+/* =========================================================
+   Music System (Intro + Random Loop + Timer overlay)
+   ========================================================= */
+
+const MUSIC_INTRO = "./sounds/Intro.mpeg";
+const MUSIC_POOL = [
+  "./sounds/MusikZwei.mpeg",
+  "./sounds/MusikDrei.mpeg",
+  "./sounds/MusikVier.mpeg"
+];
+
+const TIMER_SOUND = "./sounds/Timer.wav";
+
+let bgAudio = null;         // Hintergrundmusik (Intro + Pool)
+let timerAudio = null;      // Timer-Sound (nur bei Event)
+let bgPausedForTimer = false;
+let musicStarted = false;
+
+function applyVolumeToAllSounds() {
+  const v = masterVolume;
+
+  // GameOver
+  if (currentGameOverSound) currentGameOverSound.volume = v;
+
+  // Musik + Timer: wenn gemutet -> 0, sonst normal
+  const mv = musicMuted ? 0 : v;
+  if (bgAudio) bgAudio.volume = mv;
+  if (timerAudio) timerAudio.volume = musicMuted ? 0 : Math.min(1, v * 0.9);
+}
+
+
+// Shuffle helper
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+let musicQueue = [];
+let queueIndex = 0;
+
+function rebuildMusicQueue() {
+  musicQueue = shuffle(MUSIC_POOL);
+  queueIndex = 0;
+}
+
+function ensureBgAudio() {
+  if (!bgAudio) {
+    bgAudio = new Audio();
+    bgAudio.preload = "auto";
+    bgAudio.volume = masterVolume;
+
+    bgAudio.addEventListener("ended", () => {
+      // Wenn Intro fertig -> nächste aus Pool, danach immer weiter
+      playNextBgTrack();
+    });
+  }
+  return bgAudio;
+}
+
+function playNextBgTrack() {
+  // Wenn wir gerade wegen Timer pausieren: NICHT wechseln
+  if (bgPausedForTimer) return;
+
+  if (musicQueue.length === 0 || queueIndex >= musicQueue.length) {
+    rebuildMusicQueue();
+  }
+
+  const next = musicQueue[queueIndex++];
+  const a = ensureBgAudio();
+  a.src = next;
+  a.currentTime = 0;
+
+  a.play().catch((e) => console.warn("[MUSIC] play blocked:", e));
+}
+
+async function startGameMusic() {
+  if (musicStarted) return;
+  musicStarted = true;
+
+  rebuildMusicQueue();
+
+  const a = ensureBgAudio();
+  a.src = MUSIC_INTRO;
+  a.currentTime = 0;
+  applyVolumeToAllSounds();
+
+  try {
+    await a.play();
+    console.log("[MUSIC] Intro gestartet:", a.src);
+  } catch (e) {
+    console.warn("[MUSIC] Intro blocked/failed:", e);
+  }
+}
+
+
+function pauseGameMusicForTimer() {
+  if (!bgAudio) return;
+  if (bgAudio.paused) return;
+
+  bgPausedForTimer = true;
+  bgAudio.pause();
+}
+
+function resumeGameMusicAfterTimer() {
+  if (!bgAudio) {
+    bgPausedForTimer = false;
+    return;
+  }
+
+  bgPausedForTimer = false;
+
+  // Wenn Musik schon beendet war oder keine Quelle: nächste Track starten
+  if (!bgAudio.src) {
+    playNextBgTrack();
+    return;
+  }
+
+  bgAudio.play().catch((e) => console.warn("[MUSIC] resume blocked:", e));
+}
+
+function ensureTimerAudio() {
+  if (!timerAudio) {
+    timerAudio = new Audio(TIMER_SOUND);
+    timerAudio.preload = "auto";
+    timerAudio.loop = true;          // Timer soll durchlaufen
+    timerAudio.volume = Math.min(1, masterVolume * 0.9);
+  }
+  return timerAudio;
+}
+
+function startTimerSound() {
+  const t = ensureTimerAudio();
+  applyVolumeToAllSounds();
+  t.currentTime = 0;
+  t.play().catch((e) => console.warn("[TIMER] play blocked:", e));
+}
+
+function stopTimerSound() {
+  if (!timerAudio) return;
+  timerAudio.pause();
+  timerAudio.currentTime = 0;
+}
+
+function stopAllMusicAndTimer() {
+  bgPausedForTimer = false;
+
+  if (timerAudio) {
+    timerAudio.pause();
+    timerAudio.currentTime = 0;
+  }
+
+  if (bgAudio) {
+    bgAudio.pause();
+    bgAudio.currentTime = 0;
+    bgAudio.src = "";
+  }
+
+  musicStarted = false;
+}
+
+
+
+
+
+const END_SOUND_FILES = {
+  Finanzen: { high: "./sounds/FinanzenZuViel.wav", low: "./sounds/FinanzenZuWenig.wav" },
+  Bildung: { high: "./sounds/BildungZuViel.wav", low: "./sounds/BildungZuWenig.wav" },
+  Sicherheit: { high: "./sounds/SicherheitZuViel.wav", low: "./sounds/SicherheitZuWenig.wav" },
+  Zufriedenheit: { high: "./sounds/ZufriedenheitZuViel.wav", low: "./sounds/ZufriedenheitZuWenig.wav" }
+};
+
+
+
+function playEndSound(cat, reason) {
+  stopCurrentSound();
+
+  const side = reason === "zu hoch" ? "high" : "low";
+  const file = END_SOUND_FILES?.[cat]?.[side];
+
+  if (!file) {
+    console.warn("[SOUND] missing mapping for:", cat, reason);
+    return;
+  }
+
+  currentGameOverSound = new Audio(file);
+  currentGameOverSound.volume = masterVolume;
+  currentGameOverSound.play().catch((err) => console.error("[SOUND] play failed:", file, err));
+}
+
+/* =========================================================
+   Intro: Mascot Animation
+   ========================================================= */
+
+let introAnimIntervalId = null;
+
+function clearIntroAnim() {
+  if (introAnimIntervalId) {
+    clearInterval(introAnimIntervalId);
+    introAnimIntervalId = null;
+  }
+}
+
+function playMascotSpeak(imgEl) {
+  if (!imgEl) return;
+
+  clearIntroAnim();
+
+  let step = 0;
+  const total = Math.max(1, INTRO_IMAGES_PER_LINE);
+
+  introAnimIntervalId = setInterval(() => {
+    step++;
+
+    imgEl.src = (step % 2 === 0) ? MASCOT_FRAMES.talk : MASCOT_FRAMES.idle;
+
+    if (step === total - 1) imgEl.src = MASCOT_FRAMES.blink;
+
+    if (step >= total) {
+      clearIntroAnim();
+      imgEl.src = MASCOT_FRAMES.idle;
+    }
+  }, INTRO_FRAME_INTERVAL_MS);
+}
+
+/* =========================================================
+   Event timers (global)
+   ========================================================= */
+
+let eventIntervalId = null;
+let eventTimeoutId = null;
+
+function clearEventTimers() {
+  if (eventIntervalId) {
+    clearInterval(eventIntervalId);
+    eventIntervalId = null;
+  }
+  if (eventTimeoutId) {
+    clearTimeout(eventTimeoutId);
+    eventTimeoutId = null;
+  }
+}
+
+/* =========================================================
+   Game flow helpers
+   ========================================================= */
+
+function clampScore(v) {
+  return Math.max(SCORE_MIN, Math.min(SCORE_MAX, v));
+}
+
+function applyEffects(effects) {
+  for (const [cat, val] of Object.entries(effects)) {
+    if (state.scores[cat] === undefined) state.scores[cat] = START_SCORE;
+    state.scores[cat] = clampScore(state.scores[cat] + val);
+  }
+}
+
+function isGameOverValue(val) {
+  return val <= SCORE_MIN || val >= SCORE_MAX;
+}
+
+function shouldTriggerRescue(cat, val) {
+  return !state.rescueUsed && isGameOverValue(val);
+}
+
+function checkGameOverOrRescue() {
+  for (const [cat, val] of Object.entries(state.scores)) {
+    if (shouldTriggerRescue(cat, val)) {
+      launchRescue(cat);
+      return true;
+    }
+    if (isGameOverValue(val)) {
+      const reason = val <= SCORE_MIN ? "zu niedrig" : "zu hoch";
+      showGameOver(cat, reason);
+      return true;
+    }
+  }
+  return false;
+}
+
+/* =========================================================
+   Event system
+   ========================================================= */
+
+function rollChance(p) {
+  return Math.random() < p;
+}
+
+function pickRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function shouldTriggerEvent() {
+  if (!EVENT_DECK.length) return false;
+  if (state.eventActive) return false;
+  if (state.eventSeenThisTurn) return false;
+  return rollChance(EVENT_CHANCE_PER_TURN);
+}
+
+function renderEventCard(eventData) {
+  state.eventActive = true;
+  pauseGameMusicForTimer();
+startTimerSound();
+
+  state.eventSeenThisTurn = true;
+
+  clearEventTimers();
+
+  const board = $("#board");
+  board.innerHTML = "";
+
+  const card = create("article", "card event");
+
+  const prompt = create("div", "prompt");
+  prompt.textContent = eventData.prompt;
+
+  const meta = create("div", "meta");
+  meta.textContent = `⏳ ${EVENT_TIMER_SECONDS}s`;
+
+  const choices = create("div", "choices");
+
+  const btnLeft = create("button", "btn btn-left");
+  btnLeft.textContent = `← ${eventData.left.label}`;
+
+  const btnRight = create("button", "btn btn-right");
+  btnRight.textContent = `${eventData.right.label} →`;
+
+  let secondsLeft = EVENT_TIMER_SECONDS;
+  let finished = false;
+
+  const finalize = (side) => {
+    if (finished) return;
+    finished = true;
+
+    state.eventActive = false;
+    clearEventTimers();
+
+    const pick = side === "timeout" ? eventData.timeout : eventData[side];
+    const effects = pick?.effects || {};
+
+    showPointsAnimation(effects);
+    applyEffects(effects);
+
+    state.history.push({
+      id: eventData.id,
+      choice: side,
+      consequence: pick?.consequence || "",
+      effects
+    });
+
+    updateBars();
+    stopTimerSound();
+resumeGameMusicAfterTimer();
+
+
+    if (!checkGameOverOrRescue()) setTimeout(renderBoard, 300);
+  };
+
+  btnLeft.addEventListener("click", () => finalize("left"));
+  btnRight.addEventListener("click", () => finalize("right"));
+
+  eventIntervalId = setInterval(() => {
+    secondsLeft--;
+    meta.textContent = `⏳ ${Math.max(0, secondsLeft)}s`;
+  }, 1000);
+
+  eventTimeoutId = setTimeout(() => finalize("timeout"), EVENT_TIMER_SECONDS * 1000);
+
+  choices.append(btnLeft, btnRight);
+  card.append(prompt, meta, choices);
+  board.appendChild(card);
+}
+
+/* =========================================================
+   Rescue
+   ========================================================= */
+
+function launchRescue(cat) {
+  state.rescueUsed = true;
+
+  const options = RESCUE_CARDS[cat];
+  if (!options || !options.length) {
+    const reason = state.scores[cat] <= SCORE_MIN ? "zu niedrig" : "zu hoch";
+    showGameOver(cat, reason);
+    return;
+  }
+
+  const rescueCard = options[Math.floor(Math.random() * options.length)];
+
+  clearEventTimers();
+  state.eventActive = false;
+
+  const board = $("#board");
+  board.innerHTML = "";
+
+  const card = create("article", "card rescue");
+
+  const prompt = create("div", "prompt");
+  prompt.textContent = "⚠️ Du stehst kurz vor dem Verlust!\n" + rescueCard.prompt;
+
+  const choices = create("div", "choices");
+
+  const btnLeft = create("button", "btn btn-left");
+  btnLeft.textContent = rescueCard.left.label;
+
+  const btnRight = create("button", "btn btn-right");
+  btnRight.textContent = rescueCard.right.label;
+
+  btnLeft.addEventListener("click", () => {
+    applyEffects(rescueCard.left.effects || {});
+    updateBars();
+
+    if (isGameOverValue(state.scores[cat])) {
+      const reason = state.scores[cat] <= SCORE_MIN ? "zu niedrig" : "zu hoch";
+      showGameOver(cat, reason);
+      return;
+    }
+
+    renderBoard();
+  });
+
+  btnRight.addEventListener("click", () => {
+    if (isGameOverValue(state.scores[cat])) {
+      const reason = state.scores[cat] <= SCORE_MIN ? "zu niedrig" : "zu hoch";
+      showGameOver(cat, reason);
+      return;
+    }
+
+    renderBoard();
+  });
+
+  choices.append(btnLeft, btnRight);
+  card.append(prompt, document.createElement("div"), choices);
+  board.appendChild(card);
+}
+
+
+function buildDecisionGallery(fullscreen = false) {
+  const wrap = document.createElement("div");
+  wrap.className = fullscreen ? "decision-gallery fullscreen-vertical" : "decision-gallery";
+
+  const normalDecisions = state.history.filter(
+    (h) => h && typeof h.id === "number" && (h.choice === "left" || h.choice === "right")
+  );
+
+  if (normalDecisions.length === 0) {
+    wrap.innerHTML = `<p style="margin:0;">Keine Entscheidungen gespeichert.</p>`;
+    return wrap;
+  }
+
+  for (const h of normalDecisions) {
+    const map = DECISION_IMAGES[h.id];
+    const src = map?.[h.choice];
+    if (!src) continue;
+
+    const page = document.createElement("div");
+    page.className = "decision-page";
+
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = `Entscheidung Karte ${h.id} (${h.choice})`;
+    img.loading = "lazy";
+
+    page.appendChild(img);
+    wrap.appendChild(page);
+  }
+
+  return wrap;
+}
+
+
+
+
+
+/* =========================================================
+   Game Over
+   ========================================================= */
 
 function showGameOver(cat, reason) {
+  stopAllMusicAndTimer();  // << NEU
 
-  // 🎵 SOUND HIER – und NUR HIER
+  clearEventTimers();
+  clearIntroAnim();
+  state.eventActive = false;
+
   playEndSound(cat, reason);
 
-  const board = $('#board');
-  board.innerHTML = '';
-  const wrap = create('div', 'card');
-  wrap.style.display = 'grid';
-  wrap.style.placeItems = 'center';
-  const end = create('div', 'end');
+  const board = $("#board");
+  board.innerHTML = "";
+
+  const wrap = create("div", "card");
+  wrap.style.display = "grid";
+  wrap.style.placeItems = "center";
+
+  const end = create("div", "end");
 
   const msgSet = GAME_OVER_MESSAGES[cat];
-  let msg = msgSet
+  const msg = msgSet
     ? (reason === "zu niedrig" ? msgSet.low : msgSet.high)
     : `Deine Politik hat ${cat} zerstört.`;
 
@@ -662,137 +1210,183 @@ function showGameOver(cat, reason) {
     <h2>Spiel vorbei!</h2>
     <p><strong>${cat}</strong> ist ${reason} geworden.</p>
     <p>${msg}</p>
-    <button class="btn" onclick="restart()">Neu starten</button>
+    <p style="margin-top:12px;"><strong>Deine Entscheidungen als Zeichnungen:</strong></p>
   `;
+
+  end.appendChild(buildDecisionGallery(true)); // ✅ fullscreen-gallery
+
+  end.insertAdjacentHTML("beforeend", `
+    <div style="margin-top:14px;">
+      <button class="btn" onclick="restart()">Neu starten</button>
+    </div>
+  `);
+
   wrap.appendChild(end);
   board.appendChild(wrap);
+
+  const bar = $("#bar");
+  if (bar) bar.style.width = "100%";
 }
 
 
 
+/* =========================================================
+   Intro
+   ========================================================= */
 
-function showToast(msg) {
-  const t = $('#toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(t._hide);
-  t._hide = setTimeout(() => t.classList.remove('show'), 1700);
-}
+function renderStartScreen() {
+  clearEventTimers();
+  clearIntroAnim();
 
+  const board = $("#board");
+  board.innerHTML = "";
 
+const card = create("article", "card start-screen");
 
-
-// --------------------------------------------------------------
-//  ENTSCHEIDUNG MIT PUNKTE-ANIMATION (ANGEPAST)
-// --------------------------------------------------------------
-function decide(side, data) {
-  const pick = data[side];
-  const eff = pick.effects || {};
-
-  // Punktanimation GLOBAL anzeigen
-  showPointsAnimation(eff);
-
-  // Werte ändern
-  for (const [cat, val] of Object.entries(eff)) {
-    if (state.scores[cat] === undefined) state.scores[cat] = 5;
-    state.scores[cat] += val;
-    state.scores[cat] = Math.max(0, Math.min(10, state.scores[cat]));
-  }
-
-  state.history.push({ id: data.id, choice: side, consequence: pick.consequence, effects: eff });
-// showToast(pick.consequence);
+  const prompt = create("div", "prompt");
+prompt.textContent = "DAS DIKTATORSPIEL";
 
 
-  state.index++;
-  updateBars();
+  const meta = create("div", "meta");
+  meta.textContent = "Bereit, dein Land zu regieren?";
 
-  if (!checkGameOver()) setTimeout(renderBoard, 180);
-}
+  const choices = create("div", "choices");
+  choices.style.gridTemplateColumns = "1fr";
 
+  const btn = create("button", "btn");
+  btn.textContent = "Starten";
 
+  btn.addEventListener("click", async () => {
+  // Musik MUSS innerhalb dieses Klicks gestartet werden (Autoplay-Regel)
+  await startGameMusic();
 
-
-
-
-function showPointsAnimation(effects) {
-  const overlay = document.getElementById('points-overlay');
-  if (!overlay) return;
-
-  const wrap = document.createElement('div');
-  wrap.className = "points-float";
-
-  let html = "";
-  for (const [cat, val] of Object.entries(effects)) {
-    const cls = val >= 0 ? "points-positive" : "points-negative";
-    // Kategorie + Wert anzeigen
-    html += `<div class="${cls}">${cat}: ${val >= 0 ? "+" : ""}${val}</div>`;
-  }
-
-  wrap.innerHTML = html;
-  overlay.appendChild(wrap);
-
-  // Nach der Animation wieder entfernen
-  setTimeout(() => wrap.remove(), 2300);
-}
-
-
-
-
-
-function restart() {
-   // 🎵 Laufenden GameOver-Sound stoppen
-  if (currentGameOverSound) {
-    currentGameOverSound.pause();
-    currentGameOverSound.currentTime = 0;
-    currentGameOverSound = null;
-  }
-  state.index = 0;
-  state.history = [];
-  state.scores = { Bildung: 5, Sicherheit: 5, Zufriedenheit: 5, Finanzen: 5 };
-  state.playDeck = sampleDeck(DECK, 10);
-  state.rescueUsed = false;
-  state.pendingRescue = false;
-
+  state.startScreenDone = true;
   renderBoard();
-  updateBars();
-}
+});
 
 
-function playEndSound(cat, reason) {
-  // Wenn bereits ein Sound läuft → stoppen
-  if (currentGameOverSound) {
-    currentGameOverSound.pause();
-    currentGameOverSound.currentTime = 0;
-  }
+  choices.appendChild(btn);
+  card.append(prompt, meta, choices);
+  board.appendChild(card);
 
-  let file = "";
-
-  if (cat === "Finanzen") {
-    file = reason === "zu hoch" ? "FinanzenZuViel.WAV" : "FinanzenZuWenig.WAV";
-  }
-  if (cat === "Bildung") {
-    file = reason === "zu hoch" ? "BildungZuViel.WAV" : "BildungZuWenig.WAV";
-  }
-  if (cat === "Sicherheit") {
-    file = reason === "zu hoch" ? "SicherheitZuViel.WAV" : "SicherheitZuWenig.WAV";
-  }
-  if (cat === "Zufriedenheit") {
-    file = reason === "zu hoch" ? "ZufriedenheitZuViel.WAV" : "ZufriedenheitZuWenig.WAV";
-  }
-
-  currentGameOverSound = new Audio(file);
-  currentGameOverSound.volume = 1.0;
-  currentGameOverSound.play().catch(() => {});
+  // Fortschritt zurücksetzen
+  const bar = $("#bar");
+  if (bar) bar.style.width = "0%";
 }
 
 
 
 
+
+function renderIntro() {
+  clearEventTimers();
+  clearIntroAnim();
+  state.eventActive = false;
+
+  const board = $("#board");
+  board.innerHTML = "";
+
+  const card = create("article", "card intro");
+
+  // Mascot
+  const mascot = document.createElement("img");
+  mascot.className = "mascot";
+  mascot.src = MASCOT_FRAMES.idle;
+  mascot.alt = "Maskottchen";
+
+  // Textbereich
+  const prompt = create("div", "prompt intro-text");
+
+  // Hint
+  const hint = create("div", "intro-hint");
+
+  // Buttons erst am Ende
+  const choices = create("div", "choices");
+  choices.style.display = "none";
+
+  const btnLeft = create("button", "btn btn-left");
+  btnLeft.textContent = "Verstanden";
+
+  const btnRight = create("button", "btn btn-right");
+  btnRight.textContent = "Alles klar";
+
+  const closeIntro = () => {
+    clearIntroAnim();
+    state.introDone = true;
+    renderBoard();
+  };
+
+  btnLeft.addEventListener("click", (e) => {
+    e.stopPropagation();
+    closeIntro();
+  });
+
+  btnRight.addEventListener("click", (e) => {
+    e.stopPropagation();
+    closeIntro();
+  });
+
+  choices.append(btnLeft, btnRight);
+
+  function updateIntroView() {
+    const i = state.introLineIndex;
+
+    // Dialog-zeilen rendern (damit CSS .dialog-line greifen kann)
+    prompt.innerHTML = INTRO_SENTENCES
+      .slice(0, i + 1)
+      .map((t) => `<div class="dialog-line">${t}</div>`)
+      .join("");
+
+    playMascotSpeak(mascot);
+
+    const isLast = i >= INTRO_SENTENCES.length - 1;
+    if (isLast) {
+      hint.textContent = "";
+      choices.style.display = "grid";
+    } else {
+      hint.textContent = "Klicke auf die Karte, um weiterzulesen …";
+      choices.style.display = "none";
+    }
+
+    const bar = $("#bar");
+    if (bar) bar.style.width = "0%";
+  }
+
+  // Klick auf Karte -> nächster Satz
+  card.addEventListener("click", () => {
+    if (state.introLineIndex < INTRO_SENTENCES.length - 1) {
+      state.introLineIndex++;
+      updateIntroView();
+    }
+  });
+
+  updateIntroView();
+
+  card.append(mascot, prompt, hint, choices);
+  board.appendChild(card);
+}
+
+/* =========================================================
+   Main render
+   ========================================================= */
 
 function renderBoard() {
-  const board = $('#board');
-  board.innerHTML = '';
+  const board = $("#board");
+  board.innerHTML = "";
 
+  // 🟢 1. Start-Screen
+  if (!state.startScreenDone) {
+    renderStartScreen();
+    return;
+  }
+
+  // 🟡 2. Intro mit Maskottchen
+  if (!state.introDone) {
+    renderIntro();
+    return;
+  }
+
+  // 🔴 Safety: kein Deck
   if (!state.playDeck || state.playDeck.length === 0) {
     board.innerHTML = `
       <div class="card">
@@ -802,69 +1396,160 @@ function renderBoard() {
     return;
   }
 
-  if (state.index >= state.playDeck.length) {
-    const wrap = create('div', 'card');
-    wrap.style.display = 'grid';
-    wrap.style.placeItems = 'center';
-    const end = create('div', 'end');
+ // ✅ Sieg
+if (state.index >= state.playDeck.length) {
+  stopAllMusicAndTimer(); // << NEU
 
-    const scoreList = Object.entries(state.scores)
-      .map(([k, v]) => `<div><strong>${k}:</strong> ${v}</div>`)
-      .join('');
+  clearEventTimers();
+  clearIntroAnim();
+  state.eventActive = false;
 
-    const historyText = state.history.map(h => h.consequence).join(' ');
+  const wrap = create("div", "card");
+  wrap.style.display = "grid";
+  wrap.style.placeItems = "center";
 
-    end.innerHTML = `
-      <h2>Gewonnen!</h2>
-      <p>Du hast alle ${state.playDeck.length} Fragen beantwortet.</p>
-      <p><strong>Endstand:</strong></p>
-      <div>${scoreList}</div>
-      <p style="margin-top:12px;"><strong>Deine Entscheidungen hatten folgende Folgen:</strong></p>
-      <p style="text-align:justify; max-width:560px; margin:0 auto 16px;">${historyText}</p>
+  const end = create("div", "end");
+
+  end.innerHTML = `
+    <h2>Gewonnen!</h2>
+    <p>Du hast alle ${state.playDeck.length} Fragen beantwortet.</p>
+    <p style="margin-top:12px;"><strong>Deine Entscheidungen als Zeichnungen:</strong></p>
+  `;
+
+  end.appendChild(buildDecisionGallery(true)); // ✅ fullscreen-gallery
+
+  end.insertAdjacentHTML("beforeend", `
+    <div style="margin-top:14px;">
       <button class="btn" onclick="restart()">Nochmal spielen</button>
-    `;
+    </div>
+  `);
 
-    wrap.appendChild(end);
-    board.appendChild(wrap);
-    $('#bar').style.width = '100%';
+  wrap.appendChild(end);
+  board.appendChild(wrap);
+
+  const bar = $("#bar");
+  if (bar) bar.style.width = "100%";
+  return;
+}
+
+
+  // ⚡ Event-Interrupt
+  if (shouldTriggerEvent()) {
+    const ev = pickRandom(EVENT_DECK);
+    renderEventCard(ev);
     return;
   }
 
-  // Karte
+  // 🎴 Normale Karte
   const cardData = state.playDeck[state.index];
-  
-  let cardClass = 'card above';
-if (state.pendingRescue) cardClass = 'card rescue above';
-const card = create('article', cardClass);
 
+  const card = create("article", "card");
 
+  // Bildslot (optional)
+  const illu = buildIllustrationForCard(cardData);
+  if (illu) card.classList.add("has-illu");
 
-  const prompt = create('div', 'prompt');
+  const prompt = create("div", "prompt");
   prompt.textContent = cardData.prompt;
 
-  const spacer = create('div');
+  const spacer = create("div");
+  const choices = create("div", "choices");
 
-  const choices = create('div', 'choices');
-
-  const btnLeft = create('button', 'btn btn-left');
+  const btnLeft = create("button", "btn btn-left");
   btnLeft.textContent = `← ${cardData.left.label}`;
 
-  const btnRight = create('button', 'btn btn-right');
+  const btnRight = create("button", "btn btn-right");
   btnRight.textContent = `${cardData.right.label} →`;
 
-  btnLeft.addEventListener('click', () => decide('left', cardData));
-  btnRight.addEventListener('click', () => decide('right', cardData));
+  btnLeft.addEventListener("click", () => decide("left", cardData));
+  btnRight.addEventListener("click", () => decide("right", cardData));
 
   choices.append(btnLeft, btnRight);
 
-  card.append(prompt, spacer, choices);
+  // Reihenfolge: Prompt -> Bild -> Spacer -> Buttons
+  if (illu) {
+    card.append(prompt, illu, spacer, choices);
+  } else {
+    card.append(prompt, spacer, choices);
+  }
+
   board.appendChild(card);
 
   updateProgress();
   updateBars();
+} // ✅ renderBoard endet hier
+
+
+/* =========================================================
+   Decision (normale Frage)
+   ========================================================= */
+
+function decide(side, data) {
+  const pick = data[side];
+  const effects = pick.effects || {};
+
+  state.eventSeenThisTurn = false;
+
+  showPointsAnimation(effects);
+  applyEffects(effects);
+
+  state.history.push({
+    id: data.id,
+    choice: side,
+    consequence: pick.consequence,
+    effects
+  });
+
+  state.index++;
+  updateBars();
+
+  if (!checkGameOverOrRescue()) setTimeout(renderBoard, 180);
 }
 
-// --- Start ---
-renderBoard();
-updateBars();
+/* =========================================================
+   Restart
+   ========================================================= */
 
+function restart() {
+  clearEventTimers();
+  clearIntroAnim();
+  stopCurrentSound();
+
+  state.index = 0;
+  state.history = [];
+  state.scores = {
+    Bildung: START_SCORE,
+    Sicherheit: START_SCORE,
+    Zufriedenheit: START_SCORE,
+    Finanzen: START_SCORE
+  };
+
+  state.playDeck = sampleDeck(DECK, 10);
+  state.rescueUsed = false;
+
+  state.startScreenDone = false;
+  state.introDone = false;
+  state.introLineIndex = 0;
+
+  state.eventActive = false;
+  state.eventSeenThisTurn = false;
+
+  renderBoard();
+  updateBars();
+}
+
+
+/* =========================================================
+   Boot
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadVolume();
+  loadMusicMute();       // <- NEU
+  initVolumeSlider();
+  initMusicToggle();     // <- NEU
+
+  validateData();
+  renderBoard();
+  updateBars();
+});
