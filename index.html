@@ -1,6 +1,11 @@
 <!doctype html>
 <html lang="de">
 <head>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
+
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Das Diktatorspiel</title>
@@ -13,50 +18,52 @@
 <div class="scoreboard">
   <!-- BILDUNG -->
   <div class="bar-wrapper">
-    <div class="bar-segment" id="bar-Bildung">
-      <img src="icons/buch2.svg" alt="Bildung">
-    </div>
+    <img class="icon" src="icons/BuchNEU.png" alt="Bildung">
+    <div class="bar-fill" id="bar-Bildung"></div>
   </div>
 
   <!-- SICHERHEIT -->
   <div class="bar-wrapper">
-    <div class="bar-segment" id="bar-Sicherheit">
-      <img src="icons/schild2.svg" alt="Sicherheit">
-    </div>
+    <img class="icon" src="icons/SchlossNEU.png" alt="Sicherheit">
+    <div class="bar-fill" id="bar-Sicherheit"></div>
   </div>
 
   <!-- ZUFRIEDENHEIT -->
   <div class="bar-wrapper">
-    <div class="bar-segment" id="bar-Zufriedenheit">
-      <img src="icons/daumen2.svg" alt="Zufriedenheit">
-    </div>
+    <img class="icon" src="icons/HerzNEU.png" alt="Zufriedenheit">
+    <div class="bar-fill" id="bar-Zufriedenheit"></div>
   </div>
 
   <!-- FINANZEN -->
   <div class="bar-wrapper">
-    <div class="bar-segment" id="bar-Finanzen">
-      <img src="icons/bank2.svg" alt="Finanzen">
-    </div>
+    <img class="icon" src="icons/GeldNEU.png" alt="Finanzen">
+    <div class="bar-fill" id="bar-Finanzen"></div>
   </div>
 </div>
 
 
 
-
-  <!-- HAUPTAPP -->
   <div class="app">
     <header>
       <div>
-        <div class="title">Wie böse bist du?</div>
-        <div class="subtitle">Beantworte die Fragen wie ein guter Diktator</div>
+        <div class="title"></div>
+        <div class="subtitle"></div>
       </div>
 
-      <div style="text-align:right;">
-        <div class="subtitle">Fortschritt</div>
-        <div class="progress">
-          <div class="bar" id="bar"></div>
-        </div>
-      </div>
+    <div style="text-align:right;">
+  <div class="subtitle">Fortschritt</div>
+  <div class="progress">
+    <div class="bar" id="bar"></div>
+  </div>
+
+  <div class="volume">
+    <label for="volume">Lautstärke</label>
+    <input id="volume" type="range" min="0" max="100" value="100">
+    <button id="music-toggle" class="btn btn-music" type="button">Musik: AN</button>
+
+  </div>
+</div>
+
     </header>
 
     <!-- WICHTIG: board ist leer, JS füllt die Karten -->
