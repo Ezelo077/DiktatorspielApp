@@ -9,282 +9,27 @@ html, body { height: 100%; }
 
 body{
   margin: 0;
-  background:
-    linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.35)),
-    url("./Desk.jpg") center bottom / cover no-repeat fixed;
-
+  background: #052838;
   color: #fff;
-  font: 16px/1.5 system-ui;
-  
+
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
 }
 
-/* ===== SCOREBOARD OBEN ===== */
-.scoreboard {
-  position: fixed;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 260px;
-  display: grid;
-  gap: 10px;
-  background: rgba(0,0,0,0.45);
-  padding: 12px 14px;
-  border-radius: 14px;
-  backdrop-filter: blur(6px);
-  z-index: 9999;  /* immer über allem */
+
+
+/* Mobile-friendly: fixed background nur auf großen Screens */
+@media (min-width: 900px) {
+  body { background-attachment: fixed; }
 }
 
-.bar-wrapper {
-  background: rgba(0,0,0,.35);
-  border-radius: 10px;
-  overflow: hidden;
-  height: 28px;
-}
-
-.bar-segment {
-  height: 100%;
-  width: 50%; /* Startwert */
-  background: linear-gradient(90deg, #ff5864, #ff9a56);
-
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding-left: 8px;
-
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-
-  transition: width .3s ease;
-}
-
-.bar-segment img {
-  height: 22px;
-  width: 22px;
-  object-fit: contain;
-  background: transparent !important;
-}
-
-/* ===== APP CONTAINER (unterhalb des Scoreboards) ===== */
-.app {
-  width: 100%;
-  max-width: 820px;
-  padding: 12px 16px 24px;
-
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-
-  /* WICHTIG:
-     genug Abstand nach oben, damit die Karten NIE das Scoreboard berühren.
-     Scoreboard-Höhe (inkl. padding + Gaps) ~ 170px, daher 190px als Puffer. */
-  margin-top: 190px;
-}
-
-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.title { 
-  font-size: clamp(18px, 4vw, 28px);
-  font-weight: 800; 
-}
-
-.subtitle { 
-  color: rgba(255,255,255,.85); 
-  font-size: 13px; 
-}
-
-.progress{
-  height: 6px;
-  border-radius: 999px;
-  width: 120px;
-  background: rgba(255,255,255,.35);
-  overflow: hidden;
-}
-.bar {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #009acd, #104e8b);
-  transition: width .25s ease;
-}
-
-/* ===== KARTEN ===== */
-.board{
-  position: relative;
-  flex: 1;
-  min-height: 420px;
-  perspective: 1000px;
-
-  /* kleiner Extra-Abstand nach dem Header,
-     aber die eigentliche Trennung macht margin-top der .app */
-  margin-top: 16px;
-}
-
-.card{
-  position: relative;     /* WICHTIG */
-  margin: 0 auto;
-
-  width: min(600px, 92%);
-  min-height: 420px;      /* statt height:100% */
-
-  background: var(--paper);
-  color: var(--ink);
-  border-radius: 10px;
-  border: 1px solid rgba(0,0,0,.08);
-
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  padding: 20px;
-  gap: 12px;
-
-  box-shadow: 0 14px 28px rgba(0,0,0,.24),
-              0 3px 6px rgba(0,0,0,.16);
-}
-
-.prompt { 
-  font-size: clamp(18px, 2.8vw, 22px); 
-  font-weight: 800; 
-}
-
-.meta { 
-  color: var(--muted); 
-  font-size: 14px; 
-}
-
-/* ===== BUTTONS UNTEN ===== */
-.choices {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.btn {
-  background: #fff;
-  color: #111;
-  border: 1px solid rgba(0,0,0,.15);
-  padding: 12px 16px;
-  border-radius: 10px;
-  font-weight: 800;
-  cursor: pointer;
-
-  transition: transform .08s ease, background .2s ease;
-}
-
-.btn:hover { background: #f7f7f7; }
-.btn:active { transform: translateY(1px) scale(.98); }
-
-/* ===== CONSEQUENCE TOAST ===== */
-.toast{
-  position: fixed;
-  left: 50%; bottom: 24px;
-  transform: translateX(-50%) translateY(20px);
-
-  background: rgba(17,24,39,.9);
-  color: #fff;
-  border-radius: 12px;
-  padding: 12px 16px;
-
-  border: 1px solid rgba(255,255,255,.12);
-  box-shadow: 0 10px 30px rgba(0,0,0,.35);
-
-  opacity: 0;
-  pointer-events: none;
-
-  transition: opacity .25s ease, transform .25s ease;
-}
-
-.toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
-/* ===== END-SCREEN ===== */
-.card .end {
-  max-height: 70vh;
-  overflow-y: auto;
-  padding-right: 0.5rem;
-}
-
-.card .end::-webkit-scrollbar { width: 6px; }
-.card .end::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.3);
-  border-radius: 4px;
-}
-/* Globales Punkte-Overlay */
-#points-overlay {
-  position: fixed;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -20%);
-  pointer-events: none;
-  z-index: 99999; /* über allem */
-}
-
-/* einzelner Punkte-Effekt */
-.points-float {
-  position: absolute;
-  left: 0; /* irrelevant, weil transform genutzt wird */
-  top: 0;
-  transform: translate(-50%, 0);
-}
-
-.points-float div {
-  font-size: 18px;
-  font-weight: 400;
-  opacity: 0;
-  animation: pointsFloat 1.2s ease-out forwards;
-   white-space: nowrap;  
-}
-
-/* Farben */
-.points-positive { color: #32cd32; }
-.points-negative { color: #ff4040; }
-
-@keyframes pointsFloat {
-  0% {
-    opacity: 0;
-    transform: translateY(20px) scale(0.9);
-  }
-  10% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  90% {
-    opacity: 1;
-    transform: translateY(-10px) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-40px) scale(1);
-  }
-}
-
-.card.rescue {
-  background: #b30000;          /* kräftiges Rot */
-  color: #fff;                  /* weiße Schrift */
-  border: 2px solid #660000;    /* dunklere Umrandung */
-  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-}
-
-.card.rescue .btn {
-  background: #fff;
-  color: #000;
-  font-weight: 800;
-}
-
-.card.rescue .btn:hover {
-  background: #f2f2f2;
-}
-
-
-/* ===== SCOREBOARD OBEN ===== */
+/* ===== SCOREBOARD ===== */
 .scoreboard {
   position: fixed;
   top: 10px;
@@ -300,50 +45,494 @@ header {
   z-index: 9999;
 }
 
-.bar-wrapper {
-  background: rgba(0,0,0,.35);
+
+
+.bar-wrapper{
+  position: relative;
+  background: #59B8B3;
   border-radius: 10px;
   overflow: hidden;
   height: 28px;
 }
 
-.bar-segment {
-  height: 100%;
-  width: 50%; /* wird von JS überschrieben */
-  background: linear-gradient(90deg, #ff5864, #ff9a56);
+
+.bar-wrapper .icon{
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+
+  width: 24px;
+  height: 24px;
+
+  /* Badge, damit schwarzer Kreis sichtbar ist */
+  background: rgba(255,255,255,.9);
+  border-radius: 999px;
+  padding: 2px;
+  box-sizing: content-box;
 
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding-left: 8px;
-
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-
-  transition: width .3s ease;
-}
-
-/* Allgemeines Icon-Layout */
-.bar-segment .icon {
-  display: inline-flex;
-  align-items: center;
   justify-content: center;
+  pointer-events: none;
 }
 
-.bar-segment .icon svg {
-  width: 32px;        /* nicht kleiner */
-  height: 32px;
-  color: #fff;
-  flex-shrink: 0;
+.bar-wrapper .icon svg{
+  width: 24px;
+  height: 24px;
   display: block;
-  filter: drop-shadow(0 0 2px rgba(0,0,0,.9));
+}
+
+/* Scoreboard-Balken: wieder flüssig */
+.bar-fill{
+  height: 100%;
+  width: 50%;
+  background: #FDF6EA;
+  transition: width .3s ease, background .2s ease;
+  border-radius: 10px;
+}
+
+
+/* Icon soll drüber liegen */
+.bar-wrapper .icon{ z-index: 3; }
+
+
+/* Fortschrittsbalken oben: auch flüssig */
+.progress .bar{
+  transition: width .25s ease;
+  will-change: width;
 }
 
 
 
-/* Falls du später pro Kategorie tweaken willst: */
-.icon.education svg   { /* optional: andere Größe/Farbe */ }
-.icon.security svg    { /* optional */ }
-.icon.happiness svg   { /* optional */ }
-.icon.finances svg    { /* optional */ }
+/* ===== APP ===== */
+.app {
+  width: 100%;
+  max-width: 820px;
+  padding: 12px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 190px; /* Abstand zum Scoreboard */
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: clamp(18px, 4vw, 28px);
+  font-weight: 800;
+}
+
+.subtitle {
+  color: rgba(255,255,255,.85);
+  font-size: 13px;
+}
+
+/* Fortschrittsbalken */
+.progress{
+  height: 6px;
+  border-radius: 999px;
+  width: 120px;
+  background: rgba(255,255,255,.35);
+  overflow: hidden;
+}
+
+.bar{
+  height: 100%;
+  width: 0%;
+  background: #FDF6EA;
+  transition: width .25s ease;
+}
+
+
+/* Lautstärke */
+.volume{
+  margin-top: 8px;
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+}
+
+.volume label{
+  font-size: 12px;
+  color: rgba(255,255,255,.85);
+}
+
+.volume input[type="range"]{
+  width: 120px;
+}
+
+
+
+/* Standardkarten bekommen einen festen Bildbereich */
+.card.has-illu{
+  grid-template-rows: auto auto 1fr auto; /* prompt, bild, spacer, buttons */
+}
+
+/* Bild-Container */
+.card .illustration{
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* Höhe begrenzen, damit Buttons unten frei bleiben */
+  max-height: 210px;
+  overflow: hidden;
+
+  margin-top: 6px;
+}
+
+/* Bild selbst */
+.card .illustration img{
+  width: 100%;
+  max-width: 520px;
+  max-height: 210px;
+  object-fit: contain;   /* Zeichnung bleibt komplett sichtbar */
+  display: block;
+  border-radius: 10px;
+}
+
+
+
+
+
+/* ===== BOARD / CARD ===== */
+.board{
+  position: relative;
+  flex: 1;
+  min-height: 420px;
+  margin-top: 16px;
+}
+
+.card{
+  position: relative;
+  margin: 0 auto;
+
+  width: min(600px, 92%);
+  min-height: 420px;
+
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,.08);
+
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 20px;
+  gap: 12px;
+
+  box-shadow: 0 14px 28px rgba(0,0,0,.24),
+              0 3px 6px rgba(0,0,0,.16);
+}
+
+
+
+
+
+.prompt {
+  font-size: clamp(18px, 2.8vw, 22px);
+  font-weight: 800;
+}
+
+.meta {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ===== BUTTONS ===== */
+.choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+
+.btn-music{
+  padding: 8px 12px;
+  font-weight: 700;
+  width: 120px;
+}
+
+
+
+.btn{
+  background: #C39642;
+  color: #052838;
+  border: none;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform .08s ease, filter .2s ease;
+}
+
+.btn:hover{
+  filter: brightness(1.1);
+}
+
+.btn:active{
+  transform: translateY(1px) scale(.98);
+}
+
+
+
+/* ===== TOAST ===== */
+.toast{
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%) translateY(20px);
+
+  background: rgba(17,24,39,.9);
+  color: #fff;
+  border-radius: 12px;
+  padding: 12px 16px;
+
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ===== END ===== */
+.card .end {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.card .end::-webkit-scrollbar { width: 6px; }
+.card .end::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.3);
+  border-radius: 4px;
+}
+
+/* ===== POINTS OVERLAY ===== */
+#points-overlay {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -20%);
+  pointer-events: none;
+  z-index: 99999;
+}
+
+.points-float div {
+  font-size: 18px;
+  font-weight: 400;
+  opacity: 0;
+  animation: pointsFloat 1.2s ease-out forwards;
+  white-space: nowrap;
+}
+
+.points-positive { color: #32cd32; }
+.points-negative { color: #ff4040; }
+
+@keyframes pointsFloat {
+  0%   { opacity: 0; transform: translateY(20px) scale(0.9); }
+  10%  { opacity: 1; transform: translateY(0) scale(1); }
+  90%  { opacity: 1; transform: translateY(-10px) scale(1); }
+  100% { opacity: 0; transform: translateY(-40px) scale(1); }
+}
+
+/* ===== RESCUE (rot) ===== */
+.card.rescue {
+  background: #b30000;
+  color: #fff;
+  border: 2px solid #660000;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}
+
+.card.rescue .btn {
+  background: #fff;
+  color: #000;
+  font-weight: 800;
+}
+
+.card.rescue .btn:hover { background: #f2f2f2; }
+
+/* ===== START SCREEN ===== */
+.card.start-screen .prompt {
+  font-family: "EB Garamond", serif;
+  font-size: 42px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+
+
+/* ===== INTRO (grau + mascot + kompakter Text) ===== */
+.card.intro{
+  background: #d9d9d9;
+  color: #111;
+  border: 1px solid rgba(0,0,0,.15);
+  position: relative;
+}
+
+/* Maskottchen */
+.card.intro .mascot{
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 120px;
+  height: auto;
+  z-index: 5;
+  pointer-events: none;
+    transform: scaleX(-1);
+}
+
+/* Text links einrücken wegen Mascot */
+.card.intro .prompt{
+  padding-left: 140px;
+}
+
+/* kompakter Dialog */
+.card.intro .dialog-line{
+  margin: 4px 0;
+  line-height: 1.35;
+}
+
+.intro-text{
+  white-space: pre-line;
+  padding-left: 140px;
+}
+
+.intro-hint{
+  padding-left: 140px;
+  font-size: 12px;
+  color: rgba(0,0,0,0.55);
+}
+
+/* ===== EVENT (schwarz) ===== */
+.card.event {
+  background: #000;
+  color: #fff;
+  border: 2px solid rgba(255,255,255,0.15);
+}
+
+.card.event .prompt,
+.card.event .meta { color: #fff; }
+
+/* Timer: groß + mittig + pulsierend */
+.card.event .meta {
+  font-size: 28px;
+  font-weight: 900;
+  text-align: center;
+  align-self: center;
+  justify-self: center;
+  margin: 0;
+
+  animation: eventTimerPulse 1.4s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+@keyframes eventTimerPulse {
+  0%   { transform: scale(1);    opacity: 1; }
+  50%  { transform: scale(1.08); opacity: 0.85; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+.card.event .btn {
+  background: #fff;
+  color: #000;
+  font-weight: 800;
+}
+
+.card.event .btn:hover { background: #f2f2f2; }
+
+/* ===== Entscheidungsgalerie (Endscreen / Game Over) ===== */
+.decision-gallery{
+  margin-top: 10px;
+  max-height: 46vh;          /* scrollt innerhalb der Karte */
+  overflow-y: auto;
+  padding-right: 6px;
+
+  display: grid;
+  gap: 12px;
+}
+
+.decision-item{
+  margin: 0;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,.12);
+  background: rgba(255,255,255,.55);
+}
+
+.decision-item img{
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}
+
+.decision-item figcaption{
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(0,0,0,.65);
+}
+
+/* scrollbar optional */
+.decision-gallery::-webkit-scrollbar{ width: 6px; }
+.decision-gallery::-webkit-scrollbar-thumb{
+  background: rgba(0,0,0,.25);
+  border-radius: 4px;
+}
+/* ===== Entscheidungsgalerie (Fullscreen, 1 Bild pro Screen) ===== */
+.decision-gallery.fullscreen{
+  margin-top: 10px;
+
+  /* Nimmt möglichst viel Platz innerhalb der Endkarte */
+  width: min(560px, 92vw);
+  height: min(62vh, 520px);
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 100%;
+
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+
+  border-radius: 12px;
+  background: rgba(0,0,0,0.04);
+}
+
+.decision-page{
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  scroll-snap-align: start;
+}
+
+.decision-page img{
+  /* "ein Bild komplett auf den Screen": kein Cropping */
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+
+  /* etwas kleiner/mehr Luft */
+  padding: 18px;
+  box-sizing: border-box;
+
+  display: block;
+}
